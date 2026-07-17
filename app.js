@@ -573,18 +573,64 @@ async function testGoogleSync(mode) {
   await syncWithGoogleSheets(mode);
 }
 
+function initializeBlankStore() {
+  store = {
+    version: "2.0",
+    goals: {
+      daily: 60,
+      weekly: 420,
+      monthly: 1800,
+      yearly: 21900
+    },
+    theme: "light",
+    fileLinked: false,
+    googleSheetsUrl: "",
+    courses: [],
+    surahs: SURAHS_DATA.map(s => ({
+      ...s,
+      tilawah: false,
+      tafsir: false,
+      tadabbur: false,
+      hafazan: false,
+      murajaah: false,
+      notes: "",
+      completion: 0
+    })),
+    vocab: [],
+    hafazan: [],
+    journal: [],
+    library: [],
+    readingQueue: [],
+    dailyLogs: {},
+    sessions: [],
+    profile: {
+      name: "Hamba Allah",
+      level: "Learner",
+      firstDay: new Date().toISOString().split('T')[0]
+    },
+    reflections: {
+      favoriteAyah: "إن مع العسر يسراً",
+      favoriteAyahRef: "Ash-Sharh [94:6]",
+      favoriteAyahTranslation: "Indeed, with hardship, there is ease.",
+      currentFocus: "Select a topic of focus",
+      biggestLesson: "Write down your takeaways",
+      dua: "اللهم علّمني ما ينفعني وانفعني بما علّمتني وزدni علماً"
+    }
+  };
+  saveToLocalStorage();
+}
+
 async function loadFromLocalStorage() {
   const local = localStorage.getItem("quran_dashboard_store");
   if (local) {
     try {
       store = JSON.parse(local);
     } catch (e) {
-      console.error("Error parsing localstorage data, generating mock data instead", e);
-      generateMockData();
+      console.error("Error parsing localstorage data, initializing blank store", e);
+      initializeBlankStore();
     }
   } else {
-    generateMockData();
-    saveToLocalStorage();
+    initializeBlankStore();
   }
 
   // Check if we have a saved file handle from IndexedDB
