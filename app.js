@@ -2103,6 +2103,60 @@ function resetDataToDefault(force = false) {
   }
 }
 
+// Clear all data completely (clean slate)
+function clearAllData() {
+  localStorage.removeItem("quran_dashboard_store");
+  removeFileHandle();
+  
+  store = {
+    version: "2.0",
+    goals: {
+      daily: 60,
+      weekly: 420,
+      monthly: 1800,
+      yearly: 21900
+    },
+    theme: store.theme || "light",
+    fileLinked: false,
+    googleSheetsUrl: store.googleSheetsUrl || "",
+    courses: [],
+    surahs: SURAHS_DATA.map(s => ({
+      ...s,
+      tilawah: false,
+      tafsir: false,
+      tadabbur: false,
+      hafazan: false,
+      murajaah: false,
+      notes: "",
+      completion: 0
+    })),
+    vocab: [],
+    hafazan: [],
+    journal: [],
+    library: [],
+    readingQueue: [],
+    dailyLogs: {},
+    sessions: [],
+    profile: {
+      name: "Hamba Allah",
+      level: "Learner",
+      firstDay: new Date().toISOString().split('T')[0]
+    },
+    reflections: {
+      favoriteAyah: "إن مع العسر يسراً",
+      favoriteAyahRef: "Ash-Sharh [94:6]",
+      favoriteAyahTranslation: "Indeed, with hardship, there is ease.",
+      currentFocus: "Select a topic of focus",
+      biggestLesson: "Write down your takeaways",
+      dua: "اللهم علّمني ما ينفعني وانفعني بما علّمتني وزdني علماً"
+    }
+  };
+  
+  saveToLocalStorage();
+  renderAllViews();
+  showToast("🧹 Database cleared to clean slate!");
+}
+
 // Toggle Theme (Light/Dark)
 function toggleThemeMode() {
   const isDark = document.body.classList.toggle("dark-mode");
@@ -2124,11 +2178,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Load database
   await loadFromLocalStorage();
   
-  // URL shortcut parameter: ?reset=true
+  // URL shortcut parameters: ?reset=true or ?clear=true
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('reset') === 'true') {
     window.history.replaceState({}, document.title, window.location.pathname);
     resetDataToDefault(true);
+  } else if (urlParams.get('clear') === 'true') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    clearAllData();
   }
 
   // Keyboard shortcut: Ctrl + Shift + Alt + R to reset database from anywhere
