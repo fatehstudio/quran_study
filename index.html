@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dream Dashboard – Study Quran</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
+</head>
+<body>
+
+  <!-- ==========================================
+       SIDEBAR NAVIGATION
+       ========================================== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <!-- Dome / Mosque Logo SVG -->
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <h1>Quran Brain</h1>
+    </div>
+
+    <!-- User Status Card -->
+    <div class="user-badge-card">
+      <div class="user-badge-row">
+        <div class="avatar-container" id="sidebar-avatar">📖</div>
+        <div class="user-info">
+          <h3 id="sidebar-username">Hamba Allah</h3>
+          <span id="sidebar-userlevel">Active Learner</span>
+        </div>
+      </div>
+      <div class="sidebar-stats">
+        <div class="sidebar-stat-box">
+          <div class="sidebar-stat-val" id="sidebar-streak-val">0 Days</div>
+          <div class="sidebar-stat-lbl">Streak</div>
+        </div>
+        <div class="sidebar-stat-box">
+          <div class="sidebar-stat-val" id="sidebar-qcs-val">0%</div>
+          <div class="sidebar-stat-lbl">QCS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-tab="logs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="2" x2="22" y2="6"></line><path d="M7.5 10.5L19 21.5"></path><path d="M11.5 6.5L3 15.5"></path><path d="M16 16l-3.5-3.5"></path></svg>
+        Daily Logs
+      </a>
+      <a href="#" class="nav-item" data-tab="trackers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        Course & Surah
+      </a>
+      <a href="#" class="nav-item" data-tab="vocab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Vocabulary
+      </a>
+      <a href="#" class="nav-item" data-tab="journal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Journal & Hafazan
+      </a>
+      <a href="#" class="nav-item" data-tab="reflections">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        Reflections
+      </a>
+      <a href="#" class="nav-item" data-tab="resources">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        Resources
+      </a>
+      <a href="#" class="nav-item" data-tab="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Settings
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button class="sync-badge" id="sync-status-badge" onclick="linkLocalSyncFile()">
+        <span>🔗 Link OneDrive</span>
+      </button>
+      <button class="theme-toggle" id="sidebar-theme-toggle" onclick="toggleThemeMode()">
+        <!-- Sun icon default -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==========================================
+       MAIN CONTENT CONTAINER
+       ========================================== -->
+  <main class="main-content">
+    <header class="main-header">
+      <div class="header-title-area">
+        <h2>Quran Learning Dashboard</h2>
+        <p>A personal companion for lifelong Quran study</p>
+      </div>
+      <div class="header-actions">
+        <div class="header-date" id="current-gregorian-date">Gregorian Date</div>
+        <!-- Trophi / Badges Dialog button -->
+        <button class="theme-toggle" style="color:var(--accent)" onclick="openBadgesModal()" title="Milestones & Badges">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==========================================
+         TAB VIEW: DASHBOARD
+         ========================================== -->
+    <section class="tab-view active" id="dashboard">
+      <!-- Grid metrics -->
+      <div class="dashboard-grid">
+        <div class="glass-card gold-trim metric-card">
+          <div class="metric-icon-wrapper gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <div class="metric-details">
+            <span class="metric-label">Current Streak</span>
+            <span class="metric-value" id="stat-streak-curr">0 Days</span>
+            <span class="metric-sub">Keep Istiqamah</span>
+          </div>
+        </div>
+        <div class="glass-card emerald-trim metric-card">
+          <div class="metric-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="metric-details">
+            <span class="metric-label">Total Time Study</span>
+            <span class="metric-value" id="stat-hours-total">0 hours</span>
+            <span class="metric-sub">Calculated from sessions</span>
+          </div>
+        </div>
+        <div class="glass-card gold-trim metric-card">
+          <div class="metric-icon-wrapper gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          </div>
+          <div class="metric-details">
+            <span class="metric-label">Vocabulary Count</span>
+            <span class="metric-value" id="stat-vocab-count">0 Words</span>
+            <span class="metric-sub">Arabic meanings</span>
+          </div>
+        </div>
+        <div class="glass-card emerald-trim metric-card">
+          <div class="metric-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <div class="metric-details">
+            <span class="metric-label">Est. Completion</span>
+            <span class="metric-value" id="stat-completion-est">-</span>
+            <span class="metric-sub">Yearly goal progress</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard row 2 (Weekly progress, Today's Meter, QCS score) -->
+      <div class="dashboard-row-2">
+        <div class="glass-card emerald-trim">
+          <div class="card-header-row">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 8 22 12 18 16"></polyline><polyline points="6 8 2 12 6 16"></polyline><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+              Weekly Achievement (Sun → Sat)
+            </h3>
+            <span style="font-size:12px; color:var(--text-light)">Target: 60m/day</span>
+          </div>
+          <div class="chart-container" id="weekly-chart-wrapper">
+            <!-- Weekly custom SVG bars rendered dynamically -->
+          </div>
+        </div>
+        
+        <div class="glass-card gold-trim" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="card-header-row">
+            <h3 class="card-title">Today's Target Achievement</h3>
+          </div>
+          <div class="circle-progress-container">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" stroke="var(--bg-secondary)" stroke-width="8" fill="transparent" />
+              <circle id="today-circle-progress" cx="60" cy="60" r="52" stroke="var(--primary)" stroke-width="8" fill="transparent" stroke-linecap="round" class="progress-ring-circle" stroke-dasharray="326.7" stroke-dashoffset="326.7" />
+            </svg>
+            <div class="circle-text-container">
+              <span class="circle-percentage" id="today-percent-text">0%</span>
+              <span class="circle-label" id="today-actual-mins">0 / 60m</span>
+            </div>
+          </div>
+          <p style="font-size: 11px; text-align: center; color: var(--text-light); margin-top: 10px;">
+            Score resets daily at midnight. Consistent small inputs are the goal!
+          </p>
+        </div>
+      </div>
+
+      <!-- Dashboard row 3 (Calendar Heatmap & Categories, Consistency Score) -->
+      <div class="dashboard-row-3">
+        <div class="glass-card emerald-trim">
+          <div class="calendar-heatmap-container">
+            <div class="calendar-header-row">
+              <h3 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Monthly Study Tracker
+              </h3>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="month-nav-btn" onclick="changeCalendarMonth(-1)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <span class="calendar-month-name" id="calendar-month-name">Month Year</span>
+                <button class="month-nav-btn" onclick="changeCalendarMonth(1)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="calendar-weekdays-grid">
+              <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+            </div>
+            <div class="calendar-days-grid" id="calendar-grid-container">
+              <!-- Calendar cells rendered by JS -->
+            </div>
+            
+            <div class="calendar-legend">
+              <span>Less</span>
+              <div class="legend-color day-none"></div>
+              <div class="legend-color day-low"></div>
+              <div class="legend-color day-mid"></div>
+              <div class="legend-color day-high"></div>
+              <div class="legend-color day-star"></div>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card gold-trim" style="display: flex; flex-direction: column; justify-content: center;">
+          <h3 class="card-title" style="justify-content: center; margin-bottom: 8px;">Quran Consistency Score</h3>
+          <div class="qcs-container">
+            <span class="qcs-value" id="qcs-val-big">0</span>
+            <span class="qcs-label" id="qcs-desc-lbl">Calculating...</span>
+            <div class="qcs-bar-bg">
+              <div class="qcs-bar-fill" id="qcs-bar-fill" style="width: 0%"></div>
+            </div>
+            <p style="font-size:10px; color: var(--text-light); margin-top: 10px; line-height: 1.4;">
+              Consistency: 40% • Target: 30%<br>Category: 20% • Murajaah: 10%
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-card emerald-trim">
+          <h3 class="card-title">Category Distribution</h3>
+          <div class="category-list" id="category-distribution-list">
+            <!-- Progress bars for Tafsir, Arabic, etc. -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: DAILY LOGS & STUDY SESSION LOGS
+         ========================================== -->
+    <section class="tab-view" id="logs">
+      <div class="tab-content-layout">
+        <!-- New Session Form -->
+        <div class="section-card">
+          <h3 style="margin-bottom: 20px; color: var(--primary)">📝 Log Study Session</h3>
+          <form id="log-session-form">
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" id="sess-date" required>
+              </div>
+              <div>
+                <label class="form-label">Time</label>
+                <input type="time" class="form-control" id="sess-time" required>
+              </div>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Minutes</label>
+                <input type="number" class="form-control" id="sess-minutes" min="1" max="600" value="30" required>
+              </div>
+              <div>
+                <label class="form-label">Source</label>
+                <select class="form-control" id="sess-source">
+                  <option value="Bayyinah TV">Bayyinah TV</option>
+                  <option value="Quran.com">Quran.com</option>
+                  <option value="Books">Books</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Masjid Class">Masjid Class</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-control" id="sess-category">
+                <option value="Tafsir">📖 Tafsir</option>
+                <option value="Arabic Language">🇸🇦 Arabic Language</option>
+                <option value="Tilawah">🗣️ Tilawah</option>
+                <option value="Tajwid">🎙️ Tajwid</option>
+                <option value="Hafazan">🧠 Hafazan</option>
+                <option value="Tadabbur">🌱 Tadabbur</option>
+                <option value="Ulum al-Quran">📚 Ulum al-Quran</option>
+                <option value="Murajaah">🔄 Murajaah</option>
+              </select>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Course (Optional)</label>
+                <input type="text" class="form-control" id="sess-course" placeholder="e.g. Dream Program">
+              </div>
+              <div>
+                <label class="form-label">Lesson / Chapter</label>
+                <input type="text" class="form-control" id="sess-lesson" placeholder="e.g. Unit 1 Lesson 4">
+              </div>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Surah Context (Optional)</label>
+                <input type="text" class="form-control" id="sess-surah" placeholder="e.g. Al-Mulk">
+              </div>
+              <div>
+                <label class="form-label">Topic / Details</label>
+                <input type="text" class="form-control" id="sess-topic" placeholder="e.g. Harf of Jarr">
+              </div>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Difficulty</label>
+                <select class="form-control" id="sess-difficulty">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Rating</label>
+                <select class="form-control" id="sess-rating">
+                  <option value="5" selected>⭐⭐⭐⭐⭐ (Excellent)</option>
+                  <option value="4">⭐⭐⭐⭐ (Good)</option>
+                  <option value="3">⭐⭐⭐ (Fair)</option>
+                  <option value="2">⭐⭐ (Needs Work)</option>
+                  <option value="1">⭐ (Struggling)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes & Highlights</label>
+              <textarea class="form-control" id="sess-notes" placeholder="Write down key vocabulary, rules, or questions encountered..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Save Session Log</button>
+          </form>
+        </div>
+        
+        <!-- Sessions Log list -->
+        <div class="section-card">
+          <h3 style="margin-bottom: 20px; color: var(--accent)">📋 Detailed Study Session Logs</h3>
+          <div style="overflow-x: auto;">
+            <div class="logs-list" id="sessions-table-body">
+              <!-- Session items dynamically injected -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: TRACKERS (Courses & Surahs)
+         ========================================== -->
+    <section class="tab-view" id="trackers">
+      <!-- Course tracker list & Form -->
+      <div class="tab-content-layout" style="margin-bottom: 32px;">
+        <div class="section-card">
+          <h3 style="margin-bottom: 20px; color: var(--primary)">📚 Active Courses</h3>
+          <div class="courses-grid" id="courses-list-container">
+            <!-- Courses list dynamically injected -->
+          </div>
+        </div>
+        
+        <div class="section-card">
+          <h3 style="margin-bottom: 20px; color: var(--accent)">➕ Add New Course</h3>
+          <form id="add-course-form">
+            <div class="form-group">
+              <label class="form-label">Course Title</label>
+              <input type="text" class="form-control" id="add-course-name" required placeholder="e.g. Dream Program Unit 2">
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Platform</label>
+                <input type="text" class="form-control" id="add-course-platform" required placeholder="e.g. Bayyinah TV">
+              </div>
+              <div>
+                <label class="form-label">Category</label>
+                <input type="text" class="form-control" id="add-course-category" required placeholder="e.g. Arabic Grammar">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Lessons</label>
+              <input type="number" class="form-control" id="add-course-total" min="1" value="20" required>
+            </div>
+            <button type="submit" class="btn btn-gold btn-full">Add Course Tracker</button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 114 Surah Grid Tracker -->
+      <div class="section-card">
+        <div class="card-header-row" style="margin-bottom: 24px;">
+          <h3 class="card-title">📖 114 Surah Milestone Tracker</h3>
+          <div class="surah-filters">
+            <input type="text" class="form-control surah-search-box" id="surah-search-input" placeholder="Search Surah name or number...">
+            <select class="form-control" id="surah-filter-select" style="width: 160px;">
+              <option value="all">All Surahs</option>
+              <option value="completed">Completed (100%)</option>
+              <option value="active">In Progress</option>
+              <option value="unstarted">Unstarted</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="surah-grid-list" id="surah-checklist-grid">
+          <!-- 114 Surahs generated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: VOCABULARY & FLASHCARDS
+         ========================================== -->
+    <section class="tab-view" id="vocab">
+      <div class="vocab-layout">
+        <!-- Vocab Database -->
+        <div class="section-card">
+          <div class="card-header-row">
+            <h3 class="card-title">🇸🇦 Vocabulary Bank</h3>
+            <div class="surah-filters">
+              <input type="text" class="form-control" id="vocab-search-input" placeholder="Search Word, Root, or Meaning..." style="width: 220px;">
+              <select class="form-control" id="vocab-filter-select" style="width: 140px;">
+                <option value="all">All Words</option>
+                <option value="memorized">Memorized</option>
+                <option value="unmemorized">To Review</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="vocab-list-table-container">
+            <table class="vocab-table">
+              <thead>
+                <tr>
+                  <th>Word</th>
+                  <th>Meaning</th>
+                  <th>Root Word</th>
+                  <th>Frequency</th>
+                  <th>Example Verse</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="vocab-table-body">
+                <!-- Injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Add Word Form -->
+          <h3 style="margin-top: 32px; margin-bottom: 16px; color: var(--primary)">➕ Add New Arabic Word</h3>
+          <form id="add-vocab-form">
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Arabic Word</label>
+                <input type="text" class="form-control" id="add-vocab-word" required placeholder="e.g. رَحْمَة">
+              </div>
+              <div>
+                <label class="form-label">English/Bahasa Meaning</label>
+                <input type="text" class="form-control" id="add-vocab-meaning" required placeholder="e.g. Mercy / Kasih sayang">
+              </div>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Root Word (Huruf Asal)</label>
+                <input type="text" class="form-control" id="add-vocab-root" required placeholder="e.g. ر - ح - م">
+              </div>
+              <div>
+                <label class="form-label">Quranic Frequency (Optional)</label>
+                <input type="number" class="form-control" id="add-vocab-freq" value="1">
+              </div>
+            </div>
+            <div class="form-group row-2">
+              <div>
+                <label class="form-label">Lesson Context</label>
+                <input type="text" class="form-control" id="add-vocab-lesson" placeholder="e.g. Dream Unit 1">
+              </div>
+              <div>
+                <label class="form-label">Example Verse Context</label>
+                <input type="text" class="form-control" id="add-vocab-verse" placeholder="e.g. وَرَحْمَتِي وَسِعَتْ كُلَّ شَيْءٍ">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Save Word</button>
+          </form>
+        </div>
+        
+        <!-- Flashcard Quiz Game -->
+        <div class="glass-card gold-trim" style="align-self: flex-start;">
+          <h3 class="card-title" style="margin-bottom: 16px;">🧠 Vocabulary Flashcard Quiz</h3>
+          <div class="vocab-stats-row">
+            <span>Memorized: <strong id="quiz-score-memo" style="color:var(--success)">0</strong></span>
+            <span>Total Library: <strong id="quiz-score-total">0</strong></span>
+          </div>
+          
+          <div id="flashcard-interactive-wrapper" class="flashcard-arena">
+            <div class="flashcard-box" id="quiz-card-box" onclick="this.classList.toggle('flipped')">
+              <div class="flashcard-inner">
+                <!-- Front Side -->
+                <div class="flashcard-face flashcard-front">
+                  <span class="card-arabic-word" id="quiz-front-arabic">كِتَاب</span>
+                  <span class="card-root-word" id="quiz-front-root">Root: ك - ت - ب</span>
+                  <p style="font-size: 10px; color: var(--text-light); margin-top: 20px; text-transform: uppercase; letter-spacing:1px">Click to Flip</p>
+                </div>
+                <!-- Back Side -->
+                <div class="flashcard-face flashcard-back">
+                  <span class="card-meaning" id="quiz-back-meaning">Book / Writing</span>
+                  <span style="font-size:10px; color:var(--text-light)">Example Verse Context:</span>
+                  <p class="card-verse" id="quiz-back-verse">"ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ"</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flashcard-controls">
+              <button class="btn btn-secondary btn-full" onclick="event.stopPropagation(); handleQuizAnswer(false)">Struggling / Review</button>
+              <button class="btn btn-primary btn-full" onclick="event.stopPropagation(); handleQuizAnswer(true)">Got it! Memorized</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: JOURNAL, ULUM & HAFAZAN
+         ========================================== -->
+    <section class="tab-view" id="journal">
+      <div class="journal-layout">
+        <!-- Left Side: Add Reflection and list -->
+        <div>
+          <div class="section-card">
+            <h3 style="margin-bottom: 20px; color: var(--primary)">🌱 New Tadabbur Journal Entry</h3>
+            <form id="add-journal-form">
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Surah Context</label>
+                  <input type="text" class="form-control" id="add-j-surah" required placeholder="e.g. Ash-Sharh">
+                </div>
+                <div>
+                  <label class="form-label">Ayah Number(s)</label>
+                  <input type="text" class="form-control" id="add-j-ayah" required placeholder="e.g. 5-6">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tadabbur & Reflections</label>
+                <textarea class="form-control" id="add-j-reflection" required placeholder="What is the deeper meaning, grammatical gem, or context of this verse?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Personal Life Lesson</label>
+                <textarea class="form-control" id="add-j-lesson" required placeholder="How does this apply to your daily challenges and life?"></textarea>
+              </div>
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Action Item</label>
+                  <input type="text" class="form-control" id="add-j-action" placeholder="What will you physically change or practice?">
+                </div>
+                <div>
+                  <label class="form-label">Personal Dua</label>
+                  <input type="text" class="form-control" id="add-j-dua" placeholder="Arabic or translation dua relating to this verse">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tags (comma-separated)</label>
+                <input type="text" class="form-control" id="add-j-tags" placeholder="e.g. Hope, Patience, Action">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Save Entry</button>
+            </form>
+          </div>
+          
+          <div class="section-card">
+            <div class="card-header-row">
+              <h3 class="card-title">📖 Tadabbur Feed</h3>
+              <input type="text" class="form-control" id="journal-search-input" placeholder="Search reflections or tags..." style="width: 200px;">
+            </div>
+            <div class="journal-cards-container" id="journal-cards-grid">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Side: Ulum al-Quran Notebook and Hafazan/Murajaah planner -->
+        <div>
+          <!-- Ulum al-Quran Notes Editor -->
+          <div class="section-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 12px; color: var(--accent)">📚 Ulum al-Quran Notes Notebook</h3>
+            <textarea class="form-control" id="ulum-notes-textarea" style="min-height: 250px; font-family: monospace; font-size: 13px; line-height: 1.6;"></textarea>
+            <p style="font-size:10px; color:var(--text-light); margin-top:8px">Changes auto-save instantly to localStorage / linked file.</p>
+          </div>
+          
+          <!-- Hafazan Planner -->
+          <div class="section-card">
+            <h3 style="margin-bottom: 16px; color: var(--primary)">🧠 Hafazan & Murajaah Planner</h3>
+            <form id="add-hafazan-form" style="margin-bottom: 20px;">
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Surah</label>
+                  <input type="text" class="form-control" id="add-haf-surah" required placeholder="e.g. Al-Mulk">
+                </div>
+                <div>
+                  <label class="form-label">Ayah Range</label>
+                  <input type="text" class="form-control" id="add-haf-ayah" required placeholder="e.g. 1-10">
+                </div>
+              </div>
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Schedule</label>
+                  <select class="form-control" id="add-haf-sched">
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly" selected>Weekly</option>
+                    <option value="Bi-Weekly">Bi-Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Fluency Rating</label>
+                  <select class="form-control" id="add-haf-fluency">
+                    <option value="5">⭐⭐⭐⭐⭐ (Flawless)</option>
+                    <option value="4" selected>⭐⭐⭐⭐ (Minor pauses)</option>
+                    <option value="3">⭐⭐⭐ (Moderate hesitations)</option>
+                    <option value="2">⭐⭐ (Needs prompts)</option>
+                    <option value="1">⭐ (Struggling)</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-gold btn-full">Add Memorized Portion</button>
+            </form>
+            
+            <div id="hafazan-plan-list">
+              <!-- Hafazan list items injected here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: REFLECTIONS BOARD
+         ========================================== -->
+    <section class="tab-view" id="reflections">
+      <div class="reflection-grid">
+        <div class="glass-card gold-trim" style="display: flex; flex-direction: column; gap: 20px;">
+          <h3 class="card-title">🕌 Verse of Focus</h3>
+          <div class="ayah-highlight-box">
+            <p class="ayah-arabic" id="refl-ayah-arabic">إن مع العser يسراً</p>
+            <p class="ayah-translation" id="refl-ayah-trans">Indeed, with hardship, there is ease.</p>
+            <span class="ayah-reference" id="refl-ayah-ref">Ash-Sharh [94:6]</span>
+          </div>
+          
+          <div class="user-badge-card" style="background: var(--bg-secondary);">
+            <span class="form-label">Current Study Focus Area</span>
+            <p style="font-weight:600; font-size:14px; margin-top:4px" id="refl-focus-text">Mastering Bayyinah Dream Program Syntax (Nahu)</p>
+          </div>
+          
+          <div class="user-badge-card" style="background: var(--bg-secondary);">
+            <span class="form-label">Biggest Lesson Learned This Month</span>
+            <p style="font-style:italic; font-size:13px; margin-top:4px" id="refl-lesson-text">Consistency in small amounts is better than large, interrupted efforts.</p>
+          </div>
+        </div>
+        
+        <div class="glass-card emerald-trim">
+          <h3 class="card-title" style="margin-bottom: 20px;">🗺️ My Quran Journey Timeline</h3>
+          <div class="journey-timeline" id="journey-timeline-container">
+            <!-- Timeline items rendered dynamically -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="glass-card gold-trim" style="margin-top: 24px; text-align: center;">
+        <h3 class="card-title" style="justify-content: center; margin-bottom: 12px;">❤️ Personal Dua</h3>
+        <p style="font-family: sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 8px;" id="refl-dua-arabic">اللهم علّمني ما ينفعني وانفعني بما علّمتني وزدني علماً</p>
+        <p style="font-size:12px; color: var(--text-light);">"Ya Allah, teach me that which benefits me, benefit me with what you taught me, and increase my knowledge."</p>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: RESOURCES (Reading Queue & Library)
+         ========================================== -->
+    <section class="tab-view" id="resources">
+      <div class="tab-content-layout">
+        <!-- Reading Queue -->
+        <div>
+          <div class="section-card">
+            <h3 style="margin-bottom: 20px; color: var(--primary)">📚 Reading Queue</h3>
+            <form id="add-rq-form" style="margin-bottom: 24px;">
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Book Title</label>
+                  <input type="text" class="form-control" id="add-rq-title" required placeholder="e.g. Quran Study Methods">
+                </div>
+                <div>
+                  <label class="form-label">Author</label>
+                  <input type="text" class="form-control" id="add-rq-author" required placeholder="e.g. Yasir Qadhi">
+                </div>
+              </div>
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Priority</label>
+                  <select class="form-control" id="add-rq-priority">
+                    <option value="High">High</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Estimated Reading Time</label>
+                  <input type="text" class="form-control" id="add-rq-time" placeholder="e.g. 5 hours">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Queue Book</button>
+            </form>
+            
+            <div id="reading-queue-list">
+              <!-- Queue items here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Library Collection -->
+        <div>
+          <div class="section-card">
+            <h3 style="margin-bottom: 20px; color: var(--accent)">📂 Library Collections</h3>
+            <form id="add-lib-form" style="margin-bottom: 24px;">
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Title / Resource Name</label>
+                  <input type="text" class="form-control" id="add-lib-title" required placeholder="e.g. Coherence in Quran">
+                </div>
+                <div>
+                  <label class="form-label">Author / Creator</label>
+                  <input type="text" class="form-control" id="add-lib-source" required placeholder="e.g. Mustansir Mir">
+                </div>
+              </div>
+              <div class="form-group row-2">
+                <div>
+                  <label class="form-label">Resource Type</label>
+                  <select class="form-control" id="add-lib-type">
+                    <option value="Books">Book</option>
+                    <option value="Videos">Video</option>
+                    <option value="Articles">Article</option>
+                    <option value="Podcast">Podcast</option>
+                    <option value="Links">Link</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">URL / Web Link (Optional)</label>
+                  <input type="url" class="form-control" id="add-lib-link" placeholder="https://...">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-gold btn-full">Add to Library</button>
+            </form>
+            
+            <div id="library-list">
+              <!-- Library items here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB VIEW: SETTINGS
+         ========================================== -->
+    <section class="tab-view" id="settings">
+      <div class="tab-content-layout">
+        <!-- Target Settings -->
+        <div class="section-card">
+          <h3 style="margin-bottom: 20px; color: var(--primary)">🎯 Custom Study Goals</h3>
+          <div class="form-group">
+            <label class="form-label">Daily Target Study (Minutes)</label>
+            <input type="number" class="form-control" id="set-goal-daily" min="1" value="60">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Weekly Target Study (Minutes)</label>
+            <input type="number" class="form-control" id="set-goal-weekly" min="1" value="420">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Target Study (Minutes)</label>
+            <input type="number" class="form-control" id="set-goal-monthly" min="1" value="1800">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yearly Target Study (Hours)</label>
+            <input type="number" class="form-control" id="set-goal-yearly" min="1" value="365">
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveSettings()" style="margin-top: 10px;">Save Goals & Profile</button>
+        </div>
+
+        <!-- Profile and Data Tools -->
+        <div>
+          <div class="section-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 20px; color: var(--accent)">👤 Profile Details</h3>
+            <div class="form-group">
+              <label class="form-label">Display Username</label>
+              <input type="text" class="form-control" id="set-profile-name" value="Hamba Allah">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Learning Level / Tagline</label>
+              <input type="text" class="form-control" id="set-profile-level" value="Intermediate Learner">
+            </div>
+            <div class="form-group">
+              <label class="form-label">First Journey Day</label>
+              <input type="date" class="form-control" id="set-profile-start" value="2026-06-01">
+            </div>
+          </div>
+          
+          <!-- Google Sheets Cloud Sync -->
+          <div class="section-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 20px; color: var(--primary)">🟢 Google Sheets Auto-Sync</h3>
+            <div class="form-group">
+              <label class="form-label">Google Apps Script Web App URL</label>
+              <input type="url" class="form-control" id="set-google-url" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-primary btn-full" onclick="testGoogleSync('pull')">
+                📥 Pull Data
+              </button>
+              <button class="btn btn-gold btn-full" onclick="testGoogleSync('push')">
+                📤 Push Data
+              </button>
+            </div>
+            <p id="google-sync-status" style="font-size: 10px; color: var(--text-light); margin-top: 8px; text-align: center;">
+              Not connected. Enter Web App URL to enable multi-device auto-sync.
+            </p>
+          </div>
+          
+          <!-- Cloud Sync and Backup Tools -->
+          <div class="section-card">
+            <h3 style="margin-bottom: 20px; color: var(--primary)">💾 Sync & Backup Management</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <button class="btn btn-primary btn-full" onclick="linkLocalSyncFile()">
+                🔗 Link Auto-Save File (OneDrive/Local)
+              </button>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button class="btn btn-secondary btn-full" onclick="exportBackupData()">
+                  📥 Export JSON Backup
+                </button>
+                <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file-input').click()">
+                  📤 Import JSON Backup
+                </button>
+              </div>
+              <input type="file" id="import-file-input" style="display: none;" accept=".json" onchange="importBackupData(event)">
+              
+              <button class="btn btn-danger btn-full" onclick="resetDataToDefault()" style="margin-top: 12px;">
+                ⚠️ Reset All Data to Sample
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================
+       MODAL DIALOG: SURAH DETAIL CHECKLISTS
+       ========================================== -->
+  <div class="modal-overlay" id="surah-detail-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-surah-title" style="color: var(--primary)">Surah Name</h3>
+          <p id="modal-surah-meta" style="font-size: 11px; color: var(--text-light)">Metas</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeSurahDetailModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <!-- Checklist items -->
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; gap: 12px; font-size:14px; font-weight: 500; cursor: pointer;">
+          <input type="checkbox" id="surah-chk-tilawah" class="vocab-status-checkbox">
+          🗣️ Tilawah (Membaca dengan fasih)
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; font-size:14px; font-weight: 500; cursor: pointer;">
+          <input type="checkbox" id="surah-chk-tafsir" class="vocab-status-checkbox">
+          📖 Tafsir (Memahami tafsiran & asbabun nuzul)
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; font-size:14px; font-weight: 500; cursor: pointer;">
+          <input type="checkbox" id="surah-chk-tadabbur" class="vocab-status-checkbox">
+          🌱 Tadabbur (Menghayati isi dan mengambil iktibar)
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; font-size:14px; font-weight: 500; cursor: pointer;">
+          <input type="checkbox" id="surah-chk-hafazan" class="vocab-status-checkbox">
+          🧠 Hafazan (Menghafal ayat-ayat)
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; font-size:14px; font-weight: 500; cursor: pointer;">
+          <input type="checkbox" id="surah-chk-murajaah" class="vocab-status-checkbox">
+          🔄 Murajaah (Mengulang secara berterusan)
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Notes & Reflections for this Surah</label>
+        <textarea class="form-control" id="surah-modal-notes" placeholder="Write down structural connection highlights or personal notes..."></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn btn-secondary btn-full" onclick="closeSurahDetailModal()">Cancel</button>
+        <button class="btn btn-primary btn-full" onclick="saveSurahModalDetails()">Save Checkpoints</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DIALOG: DAILY SUMMARY VIEW/EDIT
+       ========================================== -->
+  <div class="modal-overlay" id="daily-summary-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-daily-date" style="color: var(--primary)">Daily Log Date</h3>
+          <p id="modal-daily-stats" style="font-size: 11px; color: var(--text-light)">Total study info</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeDailySummaryModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px;">Sessions for this day</h4>
+        <ul id="modal-daily-sessions-list" style="padding-left: 0;">
+          <!-- Sessions lists injected -->
+        </ul>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Daily Mood / Mental State</label>
+        <select class="form-control" id="daily-mood">
+          <option value="😊 Enthusiastic">😊 Enthusiastic</option>
+          <option value="😐 Focused">😐 Focused</option>
+          <option value="😴 Tired">😴 Tired</option>
+          <option value="😇 Peaceful">😇 Peaceful</option>
+          <option value="😔 Distracted">😔 Distracted</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reflection & Lessons Learned</label>
+        <textarea class="form-control" id="daily-reflection" placeholder="Deconstruct your thoughts for today's learnings..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Action Item for Tomorrow</label>
+        <input type="text" class="form-control" id="daily-action" placeholder="e.g. Review Dream Lesson 5 verbs">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Additional Notes</label>
+        <textarea class="form-control" id="daily-notes"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn btn-secondary btn-full" onclick="closeDailySummaryModal()">Cancel</button>
+        <button class="btn btn-primary btn-full" onclick="saveDailySummaryDetails()">Save Reflections</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DIALOG: TROPHY MILESTONE BADGES
+       ========================================== -->
+  <div class="modal-overlay" id="badges-modal">
+    <div class="modal-container" style="width: 600px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="color: var(--accent)">🏆 Milestone & Badges</h3>
+          <p style="font-size: 11px; color: var(--text-light)">Unlock awards by maintaining habits and hitting targets</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeBadgesModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div class="badges-grid" id="badges-modal-grid">
+        <!-- Badge cells rendered dynamically by JS -->
+      </div>
+      
+      <button class="btn btn-secondary btn-full" style="margin-top: 24px;" onclick="closeBadgesModal()">Close Milestones</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Set current date in header on load
+    document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  </script>
+</body>
+</html>
