@@ -2091,8 +2091,8 @@ async function linkLocalSyncFile() {
 }
 
 // Reset data helper
-function resetDataToDefault() {
-  if (confirm("WARNING: This will overwrite all your progress with default sample data. Proceed?")) {
+function resetDataToDefault(force = false) {
+  if (force || confirm("WARNING: This will overwrite all your progress with default sample data. Proceed?")) {
     localStorage.removeItem("quran_dashboard_store");
     removeFileHandle();
     store.fileLinked = false;
@@ -2128,7 +2128,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('reset') === 'true') {
     window.history.replaceState({}, document.title, window.location.pathname);
-    resetDataToDefault();
+    resetDataToDefault(true);
   }
 
   // Keyboard shortcut: Ctrl + Shift + Alt + R to reset database from anywhere
