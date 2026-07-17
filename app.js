@@ -2180,10 +2180,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   // URL shortcut parameters: ?reset=true or ?clear=true
   const urlParams = new URLSearchParams(window.location.search);
+  let isResettingOrClearing = false;
+  
   if (urlParams.get('reset') === 'true') {
+    isResettingOrClearing = true;
     window.history.replaceState({}, document.title, window.location.pathname);
     resetDataToDefault(true);
   } else if (urlParams.get('clear') === 'true') {
+    isResettingOrClearing = true;
     window.history.replaceState({}, document.title, window.location.pathname);
     clearAllData();
   }
@@ -2196,8 +2200,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
   
-  // Auto pull from Google Sheets on start if configured
-  if (store.googleSheetsUrl) {
+  // Auto pull from Google Sheets on start if configured (skip if resetting/clearing)
+  if (store.googleSheetsUrl && !isResettingOrClearing) {
     syncWithGoogleSheets('pull');
   }
   
