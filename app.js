@@ -510,7 +510,8 @@ async function syncWithGoogleSheets(mode = 'push') {
   
   try {
     if (mode === 'pull') {
-      const response = await fetch(store.googleSheetsUrl);
+      const busterUrl = store.googleSheetsUrl + (store.googleSheetsUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      const response = await fetch(busterUrl);
       if (!response.ok) throw new Error("HTTP error " + response.status);
       const text = await response.text();
       
