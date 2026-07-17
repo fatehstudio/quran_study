@@ -2124,6 +2124,21 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Load database
   await loadFromLocalStorage();
   
+  // URL shortcut parameter: ?reset=true
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('reset') === 'true') {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    resetDataToDefault();
+  }
+
+  // Keyboard shortcut: Ctrl + Shift + Alt + R to reset database from anywhere
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && e.altKey && e.key.toLowerCase() === 'r') {
+      e.preventDefault();
+      resetDataToDefault();
+    }
+  });
+  
   // Auto pull from Google Sheets on start if configured
   if (store.googleSheetsUrl) {
     syncWithGoogleSheets('pull');
