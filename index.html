@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260921-monthly">
+  <link rel="stylesheet" href="styles.css?v=20260921-autosync2">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -85,6 +85,7 @@
 
     <!-- Sidebar Footer -->
     <div class="sidebar-footer">
+      <button id="cloud-sync-indicator" class="cloud-sync-indicator" onclick="openSyncSettings()">Connect cloud sync in Settings.</button>
       <button class="sync-badge" id="sync-status-badge" onclick="linkLocalSyncFile()">
         <span>🔗 Link OneDrive</span>
       </button>
@@ -827,19 +828,21 @@
           
           <!-- Google Sheets Cloud Sync -->
           <div class="section-card" style="margin-bottom: 24px;">
-            <h3 style="margin-bottom: 20px; color: var(--primary)">🟢 Google Sheets Auto-Sync</h3>
+            <h3 style="margin-bottom: 20px; color: var(--primary)">🟢 Automatic Cloud Sync</h3>
             <div class="form-group">
               <label class="form-label">Google Apps Script Web App URL</label>
               <input type="url" class="form-control" id="set-google-url" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
             <div style="display: flex; gap: 12px;">
-              <button class="btn btn-primary btn-full" onclick="testGoogleSync('pull')">
-                📥 Pull Data
+              <button class="btn btn-primary btn-full" onclick="connectAutoSync()">
+                Connect & Sync
               </button>
-              <button class="btn btn-gold btn-full" onclick="testGoogleSync('push')">
-                📤 Push Data
+              <button class="btn btn-gold btn-full" onclick="copySyncSetupLink()">
+                Copy Device Setup Link
               </button>
             </div>
+            <p class="journey-note">Connect once on each device. Changes upload automatically. While open, the dashboard checks every 30 seconds and when you return or reconnect. Finish your form to allow incoming updates. Wait for “Synced” before switching devices; avoid editing on both at once.</p>
+            <button id="sync-resolve-button" class="btn btn-secondary btn-full" hidden onclick="showSyncConflict()">Choose which version to keep</button>
             <p id="google-sync-status" style="font-size: 10px; color: var(--text-light); margin-top: 8px; text-align: center;">
               Not connected. Enter Web App URL to enable multi-device auto-sync.
             </p>
@@ -1000,9 +1003,19 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260921-monthly"></script>
-  <script src="courses.js?v=20260921-monthly"></script>
-  <script src="progress.js?v=20260921-monthly"></script>
+  <dialog id="sync-conflict-dialog" aria-labelledby="sync-conflict-title">
+    <h3 id="sync-conflict-title">Choose your current progress</h3>
+    <p>This device and the cloud have different records. Automatic sync is paused to avoid replacing your progress.</p>
+    <p>Download a backup first if both copies contain study you want to keep. Choosing one version does not merge them.</p>
+    <button class="btn btn-secondary btn-full" onclick="downloadSyncBackup()">Download this device’s backup</button>
+    <button class="btn btn-primary btn-full" onclick="useCloudVersion()">Use cloud progress on this device</button>
+    <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
+    <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
+  </dialog>
+  <script src="app.js?v=20260921-autosync2"></script>
+  <script src="courses.js?v=20260921-autosync2"></script>
+  <script src="progress.js?v=20260921-autosync2"></script>
+  <script src="auto-sync.js?v=20260921-autosync2"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

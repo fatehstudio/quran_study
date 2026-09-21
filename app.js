@@ -494,88 +494,7 @@ async function readFromLinkedFile(handle) {
 function saveToLocalStorage() {
   localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
   writeToLinkedFile();
-  if (store.googleSheetsUrl) {
-    syncWithGoogleSheets('push');
-  }
-}
-
-async function syncWithGoogleSheets(mode = 'push') {
-  if (!store.googleSheetsUrl) return;
-  const statusEl = document.getElementById("google-sync-status");
-  
-  if (statusEl) {
-    statusEl.innerText = mode === 'pull' ? "🔄 Pulling data from Google Sheets..." : "🔄 Saving data to Google Sheets...";
-    statusEl.style.color = "var(--accent)";
-  }
-  
-  try {
-    if (mode === 'pull') {
-      const busterUrl = store.googleSheetsUrl + (store.googleSheetsUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-      const response = await fetch(busterUrl);
-      if (!response.ok) throw new Error("HTTP error " + response.status);
-      const text = await response.text();
-      
-      if (text.trim() === "" || text.trim() === "{}") {
-        if (statusEl) {
-          statusEl.innerText = "Connected. Cloud is empty. Pushing local progress...";
-          statusEl.style.color = "var(--primary)";
-        }
-        await syncWithGoogleSheets('push');
-        return;
-      }
-      
-      const loadedData = JSON.parse(text);
-      if (loadedData.version) {
-        store = { ...store, ...loadedData };
-        // Save locally without triggering a push to avoid recursion loops
-        localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
-        renderAllViews();
-        
-        if (statusEl) {
-          statusEl.innerText = "✓ Sync successful. Data loaded at " + new Date().toLocaleTimeString("ms-MY");
-          statusEl.style.color = "var(--success)";
-        }
-      } else {
-        throw new Error("Invalid backup format");
-      }
-    } else {
-      // mode === 'push'
-      // Send as text/plain to bypass CORS preflight check on Google Apps Script
-      const response = await fetch(store.googleSheetsUrl, {
-        method: "POST",
-        body: JSON.stringify(store),
-        headers: {
-          "Content-Type": "text/plain"
-        }
-      });
-      if (!response.ok) throw new Error("HTTP error " + response.status);
-      
-      if (statusEl) {
-        statusEl.innerText = "✓ Changes auto-saved to Google Sheets at " + new Date().toLocaleTimeString("ms-MY");
-        statusEl.style.color = "var(--success)";
-      }
-    }
-  } catch (err) {
-    console.error("Google Sheets sync failed", err);
-    if (statusEl) {
-      statusEl.innerText = "⚠️ Sync failed: " + err.message;
-      statusEl.style.color = "var(--danger)";
-    }
-  }
-}
-
-async function testGoogleSync(mode) {
-  const urlInput = document.getElementById("set-google-url");
-  if (urlInput) {
-    store.googleSheetsUrl = urlInput.value.trim();
-    // Persist the connection without uploading stale data before a pull.
-    localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
-  }
-  if (!store.googleSheetsUrl) {
-    showToast("Enter your Google Apps Script Web App URL first.", "error");
-    return;
-  }
-  await syncWithGoogleSheets(mode);
+  queueAutoSync();
 }
 
 function initializeBlankStore() {
@@ -1603,16 +1522,7 @@ function renderSettingsTab() {
     if (el) el.value = inputs[id];
   });
   
-  const statusEl = document.getElementById("google-sync-status");
-  if (statusEl) {
-    if (store.googleSheetsUrl) {
-      statusEl.innerText = "✓ Active connection. Data will auto-save.";
-      statusEl.style.color = "var(--success)";
-    } else {
-      statusEl.innerText = "Not connected. Enter Web App URL to enable multi-device auto-sync.";
-      statusEl.style.color = "var(--text-light)";
-    }
-  }
+  displayAutoSyncStatus();
 }
 
 function saveSettings() {
@@ -1635,10 +1545,15 @@ function saveSettings() {
   const uLvlEl = document.getElementById("sidebar-userlevel");
   if (uNameEl) uNameEl.innerText = store.profile.name;
   if (uLvlEl) uLvlEl.innerText = store.profile.level;
-  
+
+  // The settings button is not a form submit, so release the sync guard here.
+  // This lets profile changes upload immediately while the dirty flag still
+  // protects them if the page is refreshed before the request finishes.
+  if (typeof autoSync !== "undefined") autoSync.formDirty = false;
   saveToLocalStorage();
-  showToast("⚙️ Settings saved successfully!");
+  showToast("⚙️ Profile saved. Cloud sync will update automatically.");
   renderAllViews();
+  if (typeof runAutoSync === "function") runAutoSync();
 }
 
 // ==========================================
@@ -2240,11 +2155,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
   
-  // Auto pull from Google Sheets on start if configured (skip if resetting/clearing)
-  if (store.googleSheetsUrl && !isResettingOrClearing) {
-    syncWithGoogleSheets('pull');
-  }
-  
   // Set Theme
   if (store.theme === "dark") {
     document.body.classList.add("dark-mode");
@@ -2315,4 +2225,5 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   // Render views initial
   renderAllViews();
+  startAutoSync(isResettingOrClearing);
 });
