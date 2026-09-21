@@ -1525,6 +1525,32 @@ function renderSettingsTab() {
   displayAutoSyncStatus();
 }
 
+let profileAutoSaveTimer = null;
+function saveProfileSettings(showConfirmation = true) {
+  const nameInput = document.getElementById("set-profile-name");
+  const levelInput = document.getElementById("set-profile-level");
+  const startInput = document.getElementById("set-profile-start");
+  if (!nameInput || !levelInput || !startInput) return;
+
+  store.profile.name = nameInput.value.trim() || "Hamba Allah";
+  store.profile.level = levelInput.value.trim() || "Learner";
+  store.profile.firstDay = startInput.value || localStudyDate();
+  document.getElementById("sidebar-username").innerText = store.profile.name;
+  document.getElementById("sidebar-userlevel").innerText = store.profile.level;
+  if (typeof autoSync !== "undefined") autoSync.formDirty = false;
+  saveToLocalStorage();
+  if (showConfirmation) showToast("👤 Profile saved. Cloud sync will update automatically.");
+}
+
+function setupProfileAutoSave() {
+  ["set-profile-name", "set-profile-level", "set-profile-start"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", () => {
+      clearTimeout(profileAutoSaveTimer);
+      profileAutoSaveTimer = setTimeout(() => saveProfileSettings(false), 600);
+    });
+  });
+}
+
 function saveSettings() {
   store.goals.daily = parseInt(document.getElementById("set-goal-daily").value) || 60;
   store.goals.weekly = parseInt(document.getElementById("set-goal-weekly").value) || 420;
@@ -2179,6 +2205,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Hook listeners and routers
   setupRouter();
   setupFormListeners();
+  setupProfileAutoSave();
   
   // Surah filter bindings
   const sFilter = document.getElementById("surah-filter-select");
