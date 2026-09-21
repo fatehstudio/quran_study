@@ -55,13 +55,29 @@ function saveSafetyCopy() {
 }
 function validSyncUrl(url) { return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url); }
 async function readCloudData(url) {
-  const response = await fetch(url + '?_t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(20000)});
-  if (!response.ok) throw Error('Cloud returned HTTP ' + response.status);
-  const text = await response.text();
-  if (!text.trim() || text.trim() === '{}') return null;
-  const value = JSON.parse(text);
-  if (!value.version || !Array.isArray(value.sessions) || !Array.isArray(value.courses) || !value.dailyLogs || !Array.isArray(value.surahs)) throw Error('Cloud response is not a dashboard backup');
-  return value;
+  // Apps Script ContentService responses do not expose CORS headers. JSONP
+  // lets the public web app read the same response without a proxy.
+  return new Promise((resolve, reject) => {
+    const callback = '__quranCloudSync_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => finish(new Error('Cloud response timed out')), 20000);
+    function finish(error, value) {
+      clearTimeout(timeout);
+      script.remove();
+      delete window[callback];
+      if (error) reject(error); else resolve(value);
+    }
+    window[callback] = value => {
+      if (!value || (typeof value === 'object' && !Object.keys(value).length)) return finish(null, null);
+      if (!value.version || !Array.isArray(value.sessions) || !Array.isArray(value.courses) || !value.dailyLogs || !Array.isArray(value.surahs)) {
+        return finish(new Error('Cloud response is not a dashboard backup'));
+      }
+      finish(null, value);
+    };
+    script.onerror = () => finish(new Error('Cloud response could not be loaded'));
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + encodeURIComponent(callback) + '&_t=' + Date.now();
+    document.head.appendChild(script);
+  });
 }
 function applyCloudData(data) {
   saveSafetyCopy();
@@ -116,8 +132,9 @@ async function runAutoSync() {
   } finally { autoSync.busy = false; }
 }
 async function uploadStudyData(url, localText) {
-  const response = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain'}, body:localText, signal:AbortSignal.timeout(20000)});
-  if (!response.ok) throw Error('Upload failed');
+  // The write request is intentionally opaque; the following JSONP readback
+  // verifies that Apps Script stored the exact dashboard data.
+  await fetch(url, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:localText});
   const verified = await readCloudData(url);
   if (url !== autoSync.url) return;
   if (!verified || studyFingerprint(verified) !== localText) { markSyncConflict(); return; }
