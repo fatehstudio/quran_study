@@ -1,6 +1,6 @@
 // Device-local connection details are deliberately excluded from cloud data.
 const AUTO_SYNC_KEY = 'quran_dashboard_sync_state';
-let autoSync = { ready: false, busy: false, dirty: false, baseline: null, url: '', conflict: false, message: 'Connect cloud sync in Settings.', timer: null };
+let autoSync = { ready: false, busy: false, dirty: false, baseline: null, url: '', conflict: false, cloudFirst: false, message: 'Connect cloud sync in Settings.', timer: null };
 function sharedStudyData(value) {
   const data = JSON.parse(JSON.stringify(value));
   delete data.googleSheetsUrl; delete data.fileLinked; delete data.theme;
@@ -23,7 +23,7 @@ function stableSyncText(value) {
 }
 function studyFingerprint(value) { return stableSyncText(sharedStudyData(value)); }
 function persistSyncState() {
-  localStorage.setItem(AUTO_SYNC_KEY, JSON.stringify({url:autoSync.url, baseline:autoSync.baseline, dirty:autoSync.dirty}));
+  localStorage.setItem(AUTO_SYNC_KEY, JSON.stringify({url:autoSync.url, baseline:autoSync.baseline, dirty:autoSync.dirty, cloudFirst:autoSync.cloudFirst}));
 }
 function setSyncStatus(message) { autoSync.message = message; displayAutoSyncStatus(); }
 function displayAutoSyncStatus() {
@@ -109,7 +109,13 @@ async function runAutoSync() {
     if (url !== autoSync.url) return;
     const localText = studyFingerprint(store);
     const remoteText = remote ? studyFingerprint(remote) : null;
-    if (remoteText === localText) {
+    if (autoSync.cloudFirst) {
+      if (remote) {
+        if (syncFormIsActive()) return;
+        applyCloudData(remote); autoSync.baseline = remoteText; autoSync.dirty = false;
+      } else { await uploadStudyData(url, localText); }
+      autoSync.cloudFirst = false;
+    } else if (remoteText === localText) {
       autoSync.baseline = remoteText; autoSync.dirty = false;
     } else if (autoSync.baseline === null) {
       if (!remote) { await uploadStudyData(url, localText); }
@@ -190,7 +196,7 @@ async function useDeviceVersion() {
 }
 async function copySyncSetupLink() {
   if (!validSyncUrl(autoSync.url)) { showToast('Connect to cloud sync first.', 'error'); return; }
-  const link = location.origin + location.pathname + '?v=20260921-autosync#connect=' + encodeURIComponent(autoSync.url);
+  const link = location.origin + location.pathname + '?v=20260921-cloudfirst#connect=' + encodeURIComponent(autoSync.url);
   try { await navigator.clipboard.writeText(link); showToast('Setup link copied. Open it on your other device; keep it private.'); }
   catch (_) { prompt('Copy this private setup link to your other device:', link); }
 }
@@ -201,6 +207,7 @@ async function startAutoSync(skipInitialSync = false) {
   const linkUrl = fragment.get('connect');
   if (linkUrl && validSyncUrl(linkUrl)) {
     store.googleSheetsUrl = linkUrl;
+    autoSync.cloudFirst = true;
     history.replaceState(null, '', location.pathname + location.search);
     localStorage.setItem('quran_dashboard_store', JSON.stringify(store));
   }
@@ -208,6 +215,7 @@ async function startAutoSync(skipInitialSync = false) {
   store.googleSheetsUrl = autoSync.url;
   autoSync.baseline = saved.url === autoSync.url ? saved.baseline ?? null : null;
   autoSync.dirty = !!saved.dirty;
+  autoSync.cloudFirst = autoSync.cloudFirst || (saved.url === autoSync.url && !!saved.cloudFirst);
   autoSync.ready = true;
   if (skipInitialSync) { autoSync.conflict = true; setSyncStatus('Local data reset. Cloud sync paused; choose a version in Settings.'); }
   else { setSyncStatus(autoSync.url ? 'Connecting to cloud…' : 'Connect cloud sync in Settings.'); await runAutoSync(); }
