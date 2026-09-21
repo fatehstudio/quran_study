@@ -1773,3 +1773,108 @@ textarea.form-control {
     grid-template-columns: 1fr;
   }
 }
+
+/* Course updates and compact, touch-friendly layouts. */
+.main-content, .section-card, .glass-card, .course-title { min-width: 0; }
+.course-title h4, .course-meta, .course-history { overflow-wrap: anywhere; }
+.course-meta { color: var(--text-light); font-size: 13px; margin: 12px 0; }
+.course-actions-row { flex-wrap: wrap; gap: 10px; }
+.course-tracker-card progress { width: 100%; accent-color: var(--primary); margin-top: 10px; }
+#course-filter { margin-bottom: 18px; }
+#course-dialog { margin: auto; width: min(600px, calc(100% - 24px)); max-height: 90dvh; overflow: auto; padding: 24px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-primary); color: var(--text-primary); }
+#course-dialog::backdrop { background: #0008; }
+#course-dialog label { display: block; margin: 14px 0; }
+#course-dialog h4 { margin-top: 24px; }
+.course-history article { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
+.course-history p { margin: 8px 0; }
+button, a, input, select, textarea { touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 768px) {
+  body { height: auto; min-height: 100dvh; }
+  .sidebar { padding: 12px 16px; gap: 8px; }
+  .sidebar-logo { margin-bottom: 0; }
+  .sidebar-logo h1 { font-size: 20px; }
+  .user-badge-card { display: none; }
+  .sidebar-nav { display: flex; flex-direction: row; overflow-x: auto; gap: 6px; padding: 4px 0 8px; flex-shrink: 0; }
+  .sidebar-nav .nav-item { flex: 0 0 auto; white-space: nowrap; min-height: 44px; padding: 10px 12px; margin: 0; }
+  .sidebar-footer { margin-top: 0; padding-top: 0; }
+  .main-content { width: 100%; }
+  .main-header { height: auto; min-height: 80px; flex-wrap: wrap; gap: 12px; padding: 16px; }
+  .header-actions { flex-wrap: wrap; }
+  .header-title-area h2 { font-size: 19px; }
+  .dashboard-grid { gap: 10px; }
+  .metric-card { padding: 14px; flex-wrap: wrap; }
+  .metric-value { font-size: 22px; overflow-wrap: anywhere; }
+  .metric-icon-wrapper { width: 34px; height: 34px; }
+  .form-group.row-2 { grid-template-columns: 1fr; }
+  .form-control { font-size: 16px; min-height: 44px; max-width: 100%; }
+  .btn, .month-nav-btn, .theme-toggle, .modal-close-btn { min-height: 44px; min-width: 44px; }
+  .section-card, .glass-card { padding: 16px; }
+  .courses-grid { grid-template-columns: 1fr; }
+  .course-header, .card-header-row, .calendar-header-row { flex-wrap: wrap; gap: 10px; }
+  .course-actions-row .btn { flex: 1; }
+  .modal-overlay { padding: 12px; }
+  .modal-container { width: 100%; max-height: 90dvh; overflow-y: auto; padding: 20px; }
+  .vocab-list-table-container { overflow-x: auto; }
+  .calendar-days-grid { gap: 3px; }
+  .log-item-row { flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 360px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .tab-view { padding: 12px; }
+}
+/* Winding course journey */
+.journey-heading { display:flex; justify-content:space-between; align-items:center; gap:24px; margin-bottom:24px; flex-wrap:wrap; }
+.journey-heading h2 { font:600 30px var(--font-display); margin:6px 0; }
+.journey-heading p, .journey-map-heading p { color:var(--text-secondary); font-size:14px; }
+.journey-heading label { font-size:12px; flex:0 1 300px; }
+.journey-heading select { margin-top:8px; }
+.journey-eyebrow { font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--primary); text-transform:uppercase; }
+.journey-summary { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
+.journey-summary h3 { font:600 24px var(--font-display); margin:8px 0; overflow-wrap:anywhere; }
+.journey-summary p { font-size:13px; color:var(--text-secondary); }
+.journey-summary > strong { font:600 48px var(--font-display); color:var(--primary); }
+.journey-summary small { font-size:22px; }
+.journey-summary progress { flex-basis:100%; width:100%; height:8px; accent-color:var(--primary); }
+.journey-layout { display:grid; grid-template-columns:minmax(0, 1.8fr) minmax(240px, 1fr); gap:24px; align-items:start; }
+.journey-map-card { padding:24px; }
+.journey-legend { display:flex; flex-wrap:wrap; gap:16px; margin:20px 0 8px; font-size:12px; color:var(--text-secondary); }
+.journey-legend span { display:flex; align-items:center; gap:6px; }
+.journey-legend i { width:10px; height:10px; border-radius:50%; background:var(--border-color); border:1px solid var(--text-light); }
+.journey-legend .done { background:var(--primary); border-color:var(--primary); }
+.journey-legend .next { background:var(--accent); border-color:var(--accent); }
+.journey-map { position:relative; width:100%; margin:10px auto; max-width:720px; }
+.journey-map svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.journey-road { fill:none; stroke:var(--accent-light); stroke-width:30; stroke-linecap:round; }
+.journey-road.travelled { stroke:var(--primary); }
+.journey-road-center { fill:none; stroke:var(--bg-primary); stroke-width:2; stroke-dasharray:6 9; opacity:.8; }
+.journey-stop { position:absolute; transform:translate(-50%,-26px); text-align:center; width:110px; }
+.journey-stop button { width:52px; height:52px; border-radius:50%; border:5px solid var(--bg-primary); background:var(--bg-secondary); box-shadow:0 0 0 2px var(--border-color); color:var(--text-secondary); font:600 18px var(--font-display); cursor:pointer; }
+.journey-stop.done button { background:var(--primary); color:var(--bg-primary); }
+.journey-stop.next button { background:var(--accent); color:var(--bg-primary); }
+.journey-stop button[aria-pressed=true] { outline:3px solid var(--accent); outline-offset:4px; }
+.journey-stop span { display:block; font-size:12px; font-weight:600; margin-top:9px; }
+.journey-stop small { display:block; font-size:9px; letter-spacing:1px; color:var(--accent); font-weight:700; margin-top:3px; }
+.journey-pagination { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12px; }
+.journey-pagination button:disabled { opacity:.4; cursor:default; }
+.journey-detail h3 { font:600 32px var(--font-display); margin:12px 0; }
+.journey-detail p { color:var(--text-secondary); font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+.journey-topic { min-height:44px; }
+.journey-detail-stats { display:flex; gap:24px; padding:24px 0; margin:20px 0; border-block:1px solid var(--border-color); }
+.journey-detail-stats strong { display:block; font:600 28px var(--font-display); }
+.journey-detail-stats span { font-size:11px; color:var(--text-secondary); }
+.journey-detail .btn { margin:24px 0 12px; }
+.journey-detail blockquote { border-left:3px solid var(--accent); margin-top:16px; padding-left:12px; font-size:13px; overflow-wrap:anywhere; }
+.journey-note { font-size:11px !important; color:var(--text-secondary); line-height:1.6; margin-top:16px; }
+.journey-empty { text-align:center; padding:48px 20px; }
+.journey-empty p { margin:16px 0 24px; }
+@media(max-width:1100px) { .journey-layout { grid-template-columns:1fr; } }
+@media(max-width:768px) {
+  .journey-heading { gap:20px; }
+  .journey-heading label { flex-basis:100%; }
+  .journey-heading h2 { font-size:26px; }
+  .journey-map-card { padding:16px 10px; }
+  .journey-map { aspect-ratio:auto !important; height:calc(var(--journey-rows) * 125px); min-height:125px; }
+  .journey-stop { width:82px; }
+  .journey-pagination .btn { padding:10px 8px; font-size:12px; }
+}

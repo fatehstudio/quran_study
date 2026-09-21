@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260921-progress">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -56,6 +56,10 @@
       <a href="#" class="nav-item" data-tab="trackers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
         Course & Surah
+      </a>
+      <a href="#" class="nav-item" data-tab="progress">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h12a4 4 0 0 1 0 8H7a4 4 0 0 0 0 8h12"/><circle cx="5" cy="4" r="2"/><circle cx="19" cy="20" r="2"/></svg>
+        Track Progress
       </a>
       <a href="#" class="nav-item" data-tab="vocab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -150,7 +154,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">Est. Completion</span>
+            <span class="metric-label">Study Goal Estimate</span>
             <span class="metric-value" id="stat-completion-est">-</span>
             <span class="metric-sub">Yearly goal progress</span>
           </div>
@@ -257,6 +261,10 @@
     <!-- ==========================================
          TAB VIEW: DAILY LOGS & STUDY SESSION LOGS
          ========================================== -->
+    <section class="tab-view" id="progress">
+      <div class="journey-heading"><div><span class="journey-eyebrow">ONE LESSON AT A TIME</span><h2>Your learning journey</h2><p>Follow your path. See how far you’ve come.</p></div><label for="journey-course">Choose a course<select id="journey-course" class="form-control" onchange="chooseJourneyCourse(this.value)"></select></label></div>
+      <div id="journey-content"></div>
+    </section>
     <section class="tab-view" id="logs">
       <div class="tab-content-layout">
         <!-- New Session Form -->
@@ -306,7 +314,7 @@
             <div class="form-group row-2">
               <div>
                 <label class="form-label">Course (Optional)</label>
-                <input type="text" class="form-control" id="sess-course" placeholder="e.g. Dream Program">
+                <select class="form-control" id="sess-course"><option value="">Independent study</option></select>
               </div>
               <div>
                 <label class="form-label">Lesson / Chapter</label>
@@ -370,7 +378,9 @@
       <!-- Course tracker list & Form -->
       <div class="tab-content-layout" style="margin-bottom: 32px;">
         <div class="section-card">
-          <h3 style="margin-bottom: 20px; color: var(--primary)">📚 Active Courses</h3>
+          <h3 style="margin-bottom: 20px; color: var(--primary)">📚 My Courses</h3>
+          <label class="form-label" for="course-filter">Show courses</label>
+          <select id="course-filter" class="form-control" onchange="renderTrackersTab()"><option value="all">All courses</option><option value="active">Active</option><option value="planned">Planned</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="archived">Archived</option></select>
           <div class="courses-grid" id="courses-list-container">
             <!-- Courses list dynamically injected -->
           </div>
@@ -989,7 +999,9 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=20260921-progress"></script>
+  <script src="courses.js?v=20260921-progress"></script>
+  <script src="progress.js?v=20260921-progress"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

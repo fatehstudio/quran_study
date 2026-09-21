@@ -231,7 +231,7 @@ function generateMockData() {
   for (let i = 14; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = localStudyDate(d);
     
     // Skip occasional day to make streaks realistic (let's say study 11 out of 15 days)
     if (i === 12 || i === 8 || i === 3) continue;
@@ -251,7 +251,7 @@ function generateMockData() {
       const platform = platforms[Math.floor(Math.random() * platforms.length)];
       
       store.sessions.push({
-        id: store.sessions.length + 1,
+        id: nextRecordId(store.sessions),
         date: dateStr,
         time: s === 0 ? "08:30" : "20:00",
         minutes: sMins,
@@ -286,24 +286,24 @@ function generateMockData() {
 // ==========================================
 function calculateStats() {
   const activeLogs = Object.keys(store.dailyLogs).sort();
-  if (activeLogs.length === 0) return { streak: 0, longest: 0, hours: 0, minAvg: 0, qcs: 0 };
+  if (activeLogs.length === 0) return { currentStreak: 0, longestStreak: 0, studyDays: 0, totalMinutes: 0, avgMinutes: 0, qcs: 0 };
 
   // Calculate Streaks
   let currentStreak = 0;
   let longestStreak = 0;
   let tempStreak = 0;
   
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localStudyDate();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const yesterdayStr = localStudyDate(yesterday);
   
   // Find all dates from first study day to today
-  const firstDay = new Date(store.profile.firstDay);
+  const firstDay = new Date((activeLogs[0] || store.profile.firstDay) + "T12:00:00");
   const curDay = new Date();
   const allDates = [];
   for (let d = new Date(firstDay); d <= curDay; d.setDate(d.getDate() + 1)) {
-    allDates.push(d.toISOString().split('T')[0]);
+    allDates.push(localStudyDate(d));
   }
 
   allDates.forEach(date => {
@@ -318,7 +318,7 @@ function calculateStats() {
   // Current streak calculation (checking backwards from today/yesterday)
   let checkDate = new Date();
   while (true) {
-    const dStr = checkDate.toISOString().split('T')[0];
+    const dStr = localStudyDate(checkDate);
     if (store.dailyLogs[dStr] && store.dailyLogs[dStr].actual > 0) {
       currentStreak++;
       checkDate.setDate(checkDate.getDate() - 1);
@@ -344,7 +344,7 @@ function calculateStats() {
   for (let i = 0; i < 14; i++) {
     const d = new Date(startDay);
     d.setDate(startDay.getDate() - i);
-    last14Days.push(d.toISOString().split('T')[0]);
+    last14Days.push(localStudyDate(d));
   }
   const studyDaysLast14 = last14Days.filter(d => store.dailyLogs[d] && store.dailyLogs[d].actual > 0).length;
   const consistencyScore = (studyDaysLast14 / 14) * 100;
@@ -568,7 +568,12 @@ async function testGoogleSync(mode) {
   const urlInput = document.getElementById("set-google-url");
   if (urlInput) {
     store.googleSheetsUrl = urlInput.value.trim();
-    saveToLocalStorage();
+    // Persist the connection without uploading stale data before a pull.
+    localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
+  }
+  if (!store.googleSheetsUrl) {
+    showToast("Enter your Google Apps Script Web App URL first.", "error");
+    return;
   }
   await syncWithGoogleSheets(mode);
 }
@@ -606,7 +611,7 @@ function initializeBlankStore() {
     profile: {
       name: "Hamba Allah",
       level: "Learner",
-      firstDay: new Date().toISOString().split('T')[0]
+      firstDay: localStudyDate()
     },
     reflections: {
       favoriteAyah: "إن مع العسر يسراً",
@@ -676,6 +681,8 @@ function setupRouter() {
         renderDashboardHome();
       } else if (targetViewId === "trackers") {
         renderTrackersTab();
+      } else if (targetViewId === "progress") {
+        renderProgressTab();
       } else if (targetViewId === "logs") {
         renderLogsTab();
       } else if (targetViewId === "vocab") {
@@ -708,6 +715,7 @@ function renderAllViews() {
     const tabId = activeTab.getAttribute("data-tab");
     if (tabId === "dashboard") renderDashboardHome();
     else if (tabId === "trackers") renderTrackersTab();
+    else if (tabId === "progress") renderProgressTab();
     else if (tabId === "logs") renderLogsTab();
     else if (tabId === "vocab") renderVocabTab();
     else if (tabId === "journal") renderJournalTab();
@@ -751,7 +759,7 @@ function renderDashboardHome() {
   const stats = calculateStats();
   
   // Today's circle progress
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localStudyDate();
   const todayLog = store.dailyLogs[todayStr] || { target: store.goals.daily, actual: 0 };
   const percentVal = Math.min(Math.round((todayLog.actual / todayLog.target) * 100), 200);
   
@@ -825,7 +833,7 @@ function calculateEstimatedCompletion() {
   for (let i = 0; i < 14; i++) {
     const d = new Date(startDay);
     d.setDate(startDay.getDate() - i);
-    past14Days.push(d.toISOString().split('T')[0]);
+    past14Days.push(localStudyDate(d));
   }
   const totalMinutes14 = store.sessions
     .filter(s => past14Days.includes(s.date))
@@ -858,7 +866,7 @@ function renderWeeklyChart() {
   const weekData = weekdays.map((name, index) => {
     const checkDate = new Date(startOfWeek);
     checkDate.setDate(startOfWeek.getDate() + index);
-    const dateStr = checkDate.toISOString().split('T')[0];
+    const dateStr = localStudyDate(checkDate);
     const log = store.dailyLogs[dateStr] || { target: store.goals.daily, actual: 0 };
     
     if (log.actual > maxVal) maxVal = log.actual;
@@ -916,7 +924,7 @@ function renderWeeklyChart() {
     if (d.actual >= d.target && d.actual > 0) statusMarker = "🟢";
     else if (d.actual >= d.target * 0.7 && d.actual > 0) statusMarker = "🟡";
     else if (d.actual > 0) statusMarker = "🟠";
-    else if (d.date <= new Date().toISOString().split('T')[0]) statusMarker = "🔴";
+    else if (d.date <= localStudyDate()) statusMarker = "🔴";
     
     svgContent += `
       <!-- Target Bar (Gray Outline/Pattern) -->
@@ -1082,19 +1090,7 @@ function renderTrackersTab() {
   renderSurahGrid();
 }
 
-function incrementCourse(courseId) {
-  const course = store.courses.find(c => c.id === courseId);
-  if (course && course.completed < course.total) {
-    course.completed++;
-    if (course.completed === course.total) {
-      course.status = "completed";
-      course.end = new Date().toISOString().split('T')[0];
-      showToast(`🏆 Congratulations! You have completed course: ${course.name}!`);
-    }
-    saveToLocalStorage();
-    renderTrackersTab();
-  }
-}
+function incrementCourse(courseId) { continueCourse(courseId); }
 
 let surahFilter = "all";
 let surahSearchQuery = "";
@@ -1201,13 +1197,16 @@ function deleteStudySession(sessionId) {
     
     // Filter session array
     store.sessions = store.sessions.filter(s => s.id !== sessionId);
+    updateCourseCompletion(session.courseId);
     
     // Adjust daily summary minutes
     const dayStr = session.date;
     if (store.dailyLogs[dayStr]) {
       store.dailyLogs[dayStr].actual -= session.minutes;
       if (store.dailyLogs[dayStr].actual <= 0) {
-        delete store.dailyLogs[dayStr];
+        store.dailyLogs[dayStr].actual = 0;
+        store.dailyLogs[dayStr].achievement = 0;
+        store.dailyLogs[dayStr].status = "Orange";
       } else {
         const target = store.dailyLogs[dayStr].target || store.goals.daily;
         store.dailyLogs[dayStr].achievement = Math.round((store.dailyLogs[dayStr].actual / target) * 100);
@@ -1648,16 +1647,17 @@ function setupFormListeners() {
       
       const category = document.getElementById("sess-category").value;
       const mins = parseInt(document.getElementById("sess-minutes").value) || 30;
-      const dateStr = document.getElementById("sess-date").value || new Date().toISOString().split('T')[0];
+      const dateStr = document.getElementById("sess-date").value || localStudyDate();
       
       const newSession = {
-        id: store.sessions.length + 1,
+        id: nextRecordId(store.sessions),
         date: dateStr,
         time: document.getElementById("sess-time").value || "12:00",
         minutes: mins,
         source: document.getElementById("sess-source").value || "Bayyinah TV",
         category: category,
-        course: document.getElementById("sess-course").value,
+        courseId: Number(document.getElementById("sess-course").value) || null,
+        course: store.courses.find(c => c.id === Number(document.getElementById("sess-course").value))?.name || "",
         lesson: document.getElementById("sess-lesson").value,
         surah: document.getElementById("sess-surah").value,
         topic: document.getElementById("sess-topic").value,
@@ -1666,32 +1666,16 @@ function setupFormListeners() {
         notes: document.getElementById("sess-notes").value
       };
       
-      store.sessions.push(newSession);
-      
-      // Update Daily Log
-      if (!store.dailyLogs[dateStr]) {
-        store.dailyLogs[dateStr] = {
-          target: store.goals.daily,
-          actual: 0,
-          achievement: 0,
-          status: "Orange",
-          mood: "😐 Focused",
-          reflection: "Logged study session.",
-          notes: "Auto aggregated log.",
-          actionItem: ""
-        };
-      }
-      
-      const log = store.dailyLogs[dateStr];
-      log.actual += mins;
-      log.achievement = Math.round((log.actual / log.target) * 100);
-      log.status = log.actual >= log.target ? "Green" : (log.actual >= log.target * 0.7 ? "Yellow" : "Orange");
-      
+      newSession.studyStatus = document.getElementById("sess-study-status").value;
+      newSession.lessonNumber = Number(document.getElementById("sess-lesson-number").value) || null;
+      if (!validateStudy(newSession)) return;
+      saveStudySession(newSession);
+
       // Reset form
       sessForm.reset();
       
       // Keep today default dates
-      document.getElementById("sess-date").value = new Date().toISOString().split('T')[0];
+      document.getElementById("sess-date").value = localStudyDate();
       document.getElementById("sess-time").value = new Date().toLocaleTimeString("ms-MY", {hour: "2-digit", minute:"2-digit"});
       
       saveToLocalStorage();
@@ -1707,18 +1691,21 @@ function setupFormListeners() {
       e.preventDefault();
       
       const newCourse = {
-        id: store.courses.length + 1,
+        id: nextRecordId(store.courses),
         name: document.getElementById("add-course-name").value,
         platform: document.getElementById("add-course-platform").value,
         category: document.getElementById("add-course-category").value,
         total: parseInt(document.getElementById("add-course-total").value) || 10,
         completed: 0,
-        start: new Date().toISOString().split('T')[0],
+        start: localStudyDate(),
         end: "",
         status: "active"
       };
       
+      newCourse.status = document.getElementById("add-course-status").value;
+      if (newCourse.status !== "active") newCourse.start = "";
       store.courses.push(newCourse);
+      refreshCourseSelect();
       courseForm.reset();
       
       saveToLocalStorage();
@@ -1762,7 +1749,7 @@ function setupFormListeners() {
       
       const newJournal = {
         id: store.journal.length + 1,
-        date: new Date().toISOString().split('T')[0],
+        date: localStudyDate(),
         surah: document.getElementById("add-j-surah").value,
         ayah: document.getElementById("add-j-ayah").value,
         reflection: document.getElementById("add-j-reflection").value,
@@ -1833,8 +1820,8 @@ function setupFormListeners() {
         id: store.hafazan.length + 1,
         surah: document.getElementById("add-haf-surah").value,
         ayah: document.getElementById("add-haf-ayah").value,
-        memorized: new Date().toISOString().split('T')[0],
-        lastRevision: new Date().toISOString().split('T')[0],
+        memorized: localStudyDate(),
+        lastRevision: localStudyDate(),
         schedule: document.getElementById("add-haf-sched").value,
         fluency: parseInt(document.getElementById("add-haf-fluency").value) || 5,
         weakAreas: "",
@@ -1927,7 +1914,7 @@ function openDailySummaryModal(dateStr) {
   
   const log = store.dailyLogs[dateStr] || { target: store.goals.daily, actual: 0, mood: "😐 Focused", reflection: "", notes: "", actionItem: "" };
   
-  document.getElementById("modal-daily-date").innerText = new Date(dateStr).toLocaleDateString("ms-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  document.getElementById("modal-daily-date").innerText = new Date(dateStr + "T12:00:00").toLocaleDateString("ms-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   document.getElementById("modal-daily-stats").innerText = `Total Study: ${log.actual} mins / Target: ${log.target} mins (${Math.round(log.actual / log.target * 100)}%)`;
   
   // Show detailed session list for this day
@@ -1941,7 +1928,7 @@ function openDailySummaryModal(dateStr) {
     daySessions.forEach(s => {
       sessionsContainer.innerHTML += `
         <li style="font-size:12px; margin-bottom: 8px; list-style:circle; margin-left: 16px">
-          <strong>${s.time} • ${s.category} (${s.minutes}m)</strong> - ${s.source}: ${s.topic || "Self study"}
+          <strong>${escapeCourseText(s.time)} • ${escapeCourseText(s.category)} (${s.minutes}m)</strong> - ${escapeCourseText(store.courses.find(c => c.id === s.courseId)?.name || s.course || s.source)}: ${escapeCourseText(s.lesson || s.topic || "Self study")} · ${escapeCourseText(s.studyStatus || "Study")}
         </li>
       `;
     });
@@ -2074,7 +2061,7 @@ function exportBackupData() {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(store, null, 2));
   const downloadAnchor = document.createElement("a");
   downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `quran_dashboard_backup_${new Date().toISOString().split('T')[0]}.json`);
+  downloadAnchor.setAttribute("download", `quran_dashboard_backup_${localStudyDate()}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
@@ -2187,7 +2174,7 @@ function clearAllData() {
     profile: {
       name: "Hamba Allah",
       level: "Learner",
-      firstDay: new Date().toISOString().split('T')[0]
+      firstDay: localStudyDate()
     },
     reflections: {
       favoriteAyah: "إن مع العسر يسراً",
@@ -2270,7 +2257,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Set default dates on forms
   const sessDate = document.getElementById("sess-date");
   const sessTime = document.getElementById("sess-time");
-  if (sessDate) sessDate.value = new Date().toISOString().split('T')[0];
+  if (sessDate) sessDate.value = localStudyDate();
   if (sessTime) sessTime.value = new Date().toLocaleTimeString("ms-MY", {hour: "2-digit", minute:"2-digit"});
   
   // Hook listeners and routers
