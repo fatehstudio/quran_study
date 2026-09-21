@@ -3,6 +3,23 @@ function localStudyDate(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 function nextRecordId(records) { return Math.max(0, ...records.map(r => Number(r.id) || 0)) + 1; }
+function calculateMonthlyStudyMinutes(date = new Date()) {
+  const month = localStudyDate(date).slice(0, 7);
+  return store.sessions.filter(session => session.date?.slice(0, 7) === month)
+    .reduce((sum, session) => sum + session.minutes, 0);
+}
+// Refresh a page left open overnight, including when a tablet wakes from sleep.
+let lastStudyDisplayDate = localStudyDate();
+function refreshStudyDate() {
+  const today = localStudyDate();
+  if (today !== lastStudyDisplayDate) {
+    lastStudyDisplayDate = today;
+    renderAllViews();
+  }
+}
+setInterval(refreshStudyDate, 30000);
+window.addEventListener('focus', refreshStudyDate);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshStudyDate(); });
 let editingStudyId = null;
 function saveStudySession(session) {
   const previous = store.sessions.find(s => s.id === editingStudyId);

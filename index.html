@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260921-progress">
+  <link rel="stylesheet" href="styles.css?v=20260921-monthly">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -134,9 +134,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">Total Time Study</span>
+            <span class="metric-label">Study Time This Month</span>
             <span class="metric-value" id="stat-hours-total">0 hours</span>
-            <span class="metric-sub">Calculated from sessions</span>
+            <span class="metric-sub" id="stat-hours-month-label">Current calendar month</span>
+            <span class="metric-sub" id="stat-hours-lifetime">All time: 0h 0m</span>
           </div>
         </div>
         <div class="glass-card gold-trim metric-card">
@@ -999,9 +1000,9 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260921-progress"></script>
-  <script src="courses.js?v=20260921-progress"></script>
-  <script src="progress.js?v=20260921-progress"></script>
+  <script src="app.js?v=20260921-monthly"></script>
+  <script src="courses.js?v=20260921-monthly"></script>
+  <script src="progress.js?v=20260921-monthly"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

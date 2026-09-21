@@ -777,11 +777,17 @@ function renderDashboardHome() {
   if (percentTextEl) percentTextEl.innerText = percentVal + "%";
   if (todayActualEl) todayActualEl.innerText = todayLog.actual + " / " + todayLog.target + " min";
   
+  // Calendar-month totals leave historical sessions and lifetime stats intact.
+  const monthMinutes = calculateMonthlyStudyMinutes();
+  const monthLabel = document.getElementById("stat-hours-month-label");
+  if (monthLabel) monthLabel.innerText = new Date().toLocaleDateString("en-MY", { month: "long", year: "numeric" });
+  const lifetimeLabel = document.getElementById("stat-hours-lifetime");
+  if (lifetimeLabel) lifetimeLabel.innerText = `All time: ${Math.floor(stats.totalMinutes / 60)}h ${stats.totalMinutes % 60}m`;
   // Stat Box Grid
   const statsMapping = {
     "stat-streak-curr": stats.currentStreak + " Days",
     "stat-streak-longest": stats.longestStreak + " Days",
-    "stat-hours-total": Math.round(stats.totalMinutes / 60) + "h " + (stats.totalMinutes % 60) + "m",
+    "stat-hours-total": Math.floor(monthMinutes / 60) + "h " + (monthMinutes % 60) + "m",
     "stat-study-days": stats.studyDays + " Days",
     "stat-vocab-count": store.vocab.length + " Words",
     "stat-completion-est": calculateEstimatedCompletion()
