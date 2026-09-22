@@ -1070,16 +1070,22 @@ let dailyLogSearchQuery = "";
 let dailyLogSurahFilter = "";
 
 function setupDailyLogSearch() {
-  const surahNames = [...new Set([
-    ...SURAHS_DATA.map(surah => surah.name),
-    ...store.sessions.map(session => session.surah).filter(Boolean)
-  ])].sort((a, b) => a.localeCompare(b));
+  const standardKeys = new Set(SURAHS_DATA.map(surah => surahLogKey(surah.name)));
+  const standardSurahs = SURAHS_DATA.map(surah => ({
+    value: `${surah.id}. ${surah.name}`,
+    label: `${surah.id}. ${surah.name}`
+  }));
+  const customSurahs = [...new Set(store.sessions.map(session => session.surah).filter(Boolean))]
+    .filter(name => !standardKeys.has(surahLogKey(name)))
+    .sort((a, b) => a.localeCompare(b))
+    .map(name => ({value: name, label: name}));
+  const surahOptions = [...standardSurahs, ...customSurahs];
   const datalist = document.getElementById("surah-name-options");
   const filter = document.getElementById("daily-log-surah-filter");
-  if (datalist) datalist.innerHTML = surahNames.map(name => `<option value="${escapeCourseText(name)}"></option>`).join("");
+  if (datalist) datalist.innerHTML = surahOptions.map(option => `<option value="${escapeCourseText(option.value)}"></option>`).join("");
   if (filter) {
     const selected = filter.value || dailyLogSurahFilter;
-    filter.innerHTML = `<option value="">All surahs</option>` + surahNames.map(name => `<option value="${escapeCourseText(name)}">${escapeCourseText(name)}</option>`).join("");
+    filter.innerHTML = `<option value="">All surahs</option>` + surahOptions.map(option => `<option value="${escapeCourseText(option.value)}">${escapeCourseText(option.label)}</option>`).join("");
     filter.value = selected;
   }
 }
@@ -1096,7 +1102,7 @@ function renderLogsTab() {
   const query = dailyLogSearchQuery.trim().toLocaleLowerCase();
   const sortedSessions = [...store.sessions]
     .filter(session => {
-      if (dailyLogSurahFilter && session.surah !== dailyLogSurahFilter) return false;
+      if (dailyLogSurahFilter && surahLogKey(session.surah) !== surahLogKey(dailyLogSurahFilter)) return false;
       if (!query) return true;
       return [session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah, session.topic, session.difficulty, session.studyStatus, session.notes]
         .filter(Boolean).join(" ").toLocaleLowerCase().includes(query);
@@ -1836,7 +1842,10 @@ function setupFormListeners() {
 let activeSurahId = null;
 
 function surahLogKey(value) {
-  return String(value || '').normalize('NFKC').toLowerCase().replace(/^surah\s+/i, '').replace(/[\s\-'’ʻ]/g, '');
+  return String(value || '').normalize('NFKC').toLowerCase()
+    .replace(/^\s*\d+\s*[.):-]?\s*/, '')
+    .replace(/^surah\s+/i, '')
+    .replace(/[\s\-'’ʻ]/g, '');
 }
 function sessionsForSurah(surah) {
   const names = [surahLogKey(surah.name), surahLogKey(surah.arabic)];
