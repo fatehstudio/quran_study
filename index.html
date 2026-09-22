@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-open-tadabbur">
+  <link rel="stylesheet" href="styles.css?v=20260922-reflection-reset">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -641,38 +641,40 @@
          ========================================== -->
     <section class="tab-view" id="reflections">
       <div class="reflection-grid">
-        <div class="glass-card gold-trim" style="display: flex; flex-direction: column; gap: 20px;">
+        <form class="glass-card gold-trim reflection-editor" id="reflection-board-form">
           <h3 class="card-title">🕌 Verse of Focus</h3>
           <div class="ayah-highlight-box">
-            <p class="ayah-arabic" id="refl-ayah-arabic">إن مع العser يسراً</p>
-            <p class="ayah-translation" id="refl-ayah-trans">Indeed, with hardship, there is ease.</p>
-            <span class="ayah-reference" id="refl-ayah-ref">Ash-Sharh [94:6]</span>
+            <label class="form-label" for="refl-ayah-arabic">Arabic verse</label>
+            <textarea class="form-control reflection-arabic-input" id="refl-ayah-arabic" dir="rtl" placeholder="Add an ayah that you want to focus on"></textarea>
+            <label class="form-label" for="refl-ayah-trans">Translation</label>
+            <textarea class="form-control" id="refl-ayah-trans" placeholder="Add the translation"></textarea>
+            <label class="form-label" for="refl-ayah-ref">Surah and ayah reference</label>
+            <input class="form-control" id="refl-ayah-ref" placeholder="Example: Al-Baqarah [2:286]">
           </div>
-          
           <div class="user-badge-card" style="background: var(--bg-secondary);">
-            <span class="form-label">Current Study Focus Area</span>
-            <p style="font-weight:600; font-size:14px; margin-top:4px" id="refl-focus-text">Mastering Bayyinah Dream Program Syntax (Nahu)</p>
+            <label class="form-label" for="refl-focus-text">Current Study Focus Area</label>
+            <textarea class="form-control" id="refl-focus-text" placeholder="Add your current study focus"></textarea>
           </div>
-          
           <div class="user-badge-card" style="background: var(--bg-secondary);">
-            <span class="form-label">Biggest Lesson Learned This Month</span>
-            <p style="font-style:italic; font-size:13px; margin-top:4px" id="refl-lesson-text">Consistency in small amounts is better than large, interrupted efforts.</p>
+            <label class="form-label" for="refl-lesson-text">Biggest Lesson Learned This Month</label>
+            <textarea class="form-control" id="refl-lesson-text" placeholder="Add your biggest lesson this month"></textarea>
           </div>
-        </div>
-        
+          <button type="submit" class="btn btn-primary btn-full">Save Reflection Board</button>
+        </form>
         <div class="glass-card emerald-trim">
           <h3 class="card-title" style="margin-bottom: 20px;">🗺️ My Quran Journey Timeline</h3>
-          <div class="journey-timeline" id="journey-timeline-container">
-            <!-- Timeline items rendered dynamically -->
-          </div>
+          <p class="timeline-help">Achievements unlock automatically from your study records.</p>
+          <div class="journey-timeline" id="journey-timeline-container"></div>
         </div>
       </div>
-      
-      <div class="glass-card gold-trim" style="margin-top: 24px; text-align: center;">
+      <form class="glass-card gold-trim reflection-editor reflection-dua-editor" id="reflection-dua-form" style="margin-top: 24px; text-align: center;">
         <h3 class="card-title" style="justify-content: center; margin-bottom: 12px;">❤️ Personal Dua</h3>
-        <p style="font-family: sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 8px;" id="refl-dua-arabic">اللهم علّمني ما ينفعني وانفعني بما علّمتني وزدني علماً</p>
-        <p style="font-size:12px; color: var(--text-light);">"Ya Allah, teach me that which benefits me, benefit me with what you taught me, and increase my knowledge."</p>
-      </div>
+        <label class="form-label" for="refl-dua-arabic">Dua</label>
+        <textarea class="form-control reflection-arabic-input" id="refl-dua-arabic" dir="rtl" placeholder="Add your personal dua"></textarea>
+        <label class="form-label" for="refl-dua-translation">Meaning or personal note</label>
+        <textarea class="form-control" id="refl-dua-translation" placeholder="Add the meaning or your personal note"></textarea>
+        <button type="submit" class="btn btn-primary">Save Personal Dua</button>
+      </form>
     </section>
 
     <!-- ==========================================
@@ -1003,10 +1005,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-open-tadabbur"></script>
-  <script src="courses.js?v=20260922-open-tadabbur"></script>
-  <script src="progress.js?v=20260922-open-tadabbur"></script>
-  <script src="auto-sync.js?v=20260922-open-tadabbur"></script>
+  <script src="app.js?v=20260922-reflection-reset"></script>
+  <script src="courses.js?v=20260922-reflection-reset"></script>
+  <script src="progress.js?v=20260922-reflection-reset"></script>
+  <script src="auto-sync.js?v=20260922-reflection-reset"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

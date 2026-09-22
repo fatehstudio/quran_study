@@ -1519,19 +1519,60 @@ function deleteHafazanPlanner(id) {
 
 // Render Reflections Tab
 function renderReflectionsTab() {
+  if (store.reflectionBoardVersion !== 2) {
+    store.reflections = {
+      favoriteAyah: "",
+      favoriteAyahRef: "",
+      favoriteAyahTranslation: "",
+      currentFocus: "",
+      biggestLesson: "",
+      dua: "",
+      duaTranslation: ""
+    };
+    store.reflectionBoardVersion = 2;
+    saveToLocalStorage();
+  }
+  store.reflections = { favoriteAyah: "", favoriteAyahRef: "", favoriteAyahTranslation: "", currentFocus: "", biggestLesson: "", dua: "", duaTranslation: "", ...(store.reflections || {}) };
   const fields = {
     "refl-ayah-arabic": store.reflections.favoriteAyah,
     "refl-ayah-ref": store.reflections.favoriteAyahRef,
     "refl-ayah-trans": store.reflections.favoriteAyahTranslation,
     "refl-focus-text": store.reflections.currentFocus,
     "refl-lesson-text": store.reflections.biggestLesson,
-    "refl-dua-arabic": store.reflections.dua
+    "refl-dua-arabic": store.reflections.dua,
+    "refl-dua-translation": store.reflections.duaTranslation
   };
   
   Object.keys(fields).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerText = fields[id];
+    if (el) el.value = fields[id] || "";
   });
+
+  const boardForm = document.getElementById("reflection-board-form");
+  if (boardForm && !boardForm.dataset.hooked) {
+    boardForm.addEventListener("submit", event => {
+      event.preventDefault();
+      store.reflections.favoriteAyah = document.getElementById("refl-ayah-arabic").value.trim();
+      store.reflections.favoriteAyahTranslation = document.getElementById("refl-ayah-trans").value.trim();
+      store.reflections.favoriteAyahRef = document.getElementById("refl-ayah-ref").value.trim();
+      store.reflections.currentFocus = document.getElementById("refl-focus-text").value.trim();
+      store.reflections.biggestLesson = document.getElementById("refl-lesson-text").value.trim();
+      saveToLocalStorage();
+      showToast("Reflection Board saved.");
+    });
+    boardForm.dataset.hooked = "true";
+  }
+  const duaForm = document.getElementById("reflection-dua-form");
+  if (duaForm && !duaForm.dataset.hooked) {
+    duaForm.addEventListener("submit", event => {
+      event.preventDefault();
+      store.reflections.dua = document.getElementById("refl-dua-arabic").value.trim();
+      store.reflections.duaTranslation = document.getElementById("refl-dua-translation").value.trim();
+      saveToLocalStorage();
+      showToast("Personal dua saved.");
+    });
+    duaForm.dataset.hooked = "true";
+  }
   
   // Setup timeline
   renderJourneyTimeline();
@@ -1544,15 +1585,19 @@ function renderJourneyTimeline() {
   container.innerHTML = "";
   
   // Calculate milestones dynamically
-  const stats = calculateStats();
-  const totalHours = Math.round(stats.totalMinutes / 60);
+  const totalMinutes = store.sessions.reduce((sum, session) => sum + (Number(session.minutes) || 0), 0);
+  const totalHours = totalMinutes / 60;
+  const juzAmmaComplete = store.surahs
+    .filter(surah => surah.id >= 78 && surah.id <= 114)
+    .every(surah => Number(surah.completion) === 100);
+  const vocabCount = store.vocab.filter(v => v.memorized).length;
   
   const milestones = [
-    { label: "Quran Journey Started", date: store.profile.firstDay, completed: true },
-    { label: "10 Hours of Quran Study", date: totalHours >= 10 ? "Achieved" : "Locked", completed: totalHours >= 10 },
-    { label: "Juz 'Amma Tracker Completed", date: "Locked", completed: false },
-    { label: "50 Hours of Study", date: totalHours >= 50 ? "Achieved" : "Locked", completed: totalHours >= 50 },
-    { label: "100 Vocabulary Words Learned", date: store.vocab.filter(v => v.memorized).length >= 100 ? "Achieved" : "Locked", completed: store.vocab.filter(v => v.memorized).length >= 100 }
+    { label: "Quran Journey Started", date: `Started: ${store.profile.firstDay || localStudyDate()}`, completed: true },
+    { label: "10 Hours of Quran Study", date: totalHours >= 10 ? "Unlocked" : "Locked", completed: totalHours >= 10 },
+    { label: "Juz 'Amma Tracker Completed", date: juzAmmaComplete ? "Unlocked" : "Locked", completed: juzAmmaComplete },
+    { label: "50 Hours of Study", date: totalHours >= 50 ? "Unlocked" : "Locked", completed: totalHours >= 50 },
+    { label: "100 Vocabulary Words Learned", date: vocabCount >= 100 ? "Unlocked" : "Locked", completed: vocabCount >= 100 }
   ];
   
   milestones.forEach(m => {
@@ -1561,7 +1606,7 @@ function renderJourneyTimeline() {
         <div class="timeline-dot ${m.completed ? "completed" : ""}"></div>
         <div class="timeline-content">
           <h4>${m.label}</h4>
-          <span>Status: ${m.date}</span>
+          <span>${m.date}</span>
         </div>
       </div>
     `;

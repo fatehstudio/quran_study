@@ -1692,6 +1692,13 @@ textarea.form-control {
   position: relative;
 }
 
+.reflection-editor { display:flex; flex-direction:column; gap:20px; }
+.reflection-editor .form-label { text-align:left; margin-top:4px; }
+.reflection-editor textarea { min-height:72px; resize:vertical; }
+.reflection-editor .reflection-arabic-input { min-height:96px; font-size:22px; line-height:1.7; text-align:right; color:var(--primary); }
+.reflection-dua-editor .btn { align-self:center; min-width:220px; }
+.timeline-help { color:var(--text-light); font-size:11px; margin-top:-10px; }
+
 .ayah-arabic {
   font-size: 24px;
   font-weight: 700;
