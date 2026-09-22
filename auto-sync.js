@@ -196,7 +196,7 @@ async function useDeviceVersion() {
 }
 async function copySyncSetupLink() {
   if (!validSyncUrl(autoSync.url)) { showToast('Connect to cloud sync first.', 'error'); return; }
-  const link = location.origin + location.pathname + '?v=20260922-dailyjournal#connect=' + encodeURIComponent(autoSync.url);
+  const link = location.origin + location.pathname + '?v=20260922-ulum-surah#connect=' + encodeURIComponent(autoSync.url);
   try { await navigator.clipboard.writeText(link); showToast('Setup link copied. Open it on your other device; keep it private.'); }
   catch (_) { prompt('Copy this private setup link to your other device:', link); }
 }

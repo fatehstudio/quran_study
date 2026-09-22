@@ -144,6 +144,8 @@ let store = {
   vocab: [],
   hafazan: [],
   journal: [],
+  ulumNotes: "",
+  ulumNotesBySurah: {},
   library: [],
   readingQueue: [],
   
@@ -202,6 +204,8 @@ function generateMockData() {
 
   // Tadabbur reflections now belong to Daily Logs.
   store.journal = [];
+  store.ulumNotes = "";
+  store.ulumNotesBySurah = {};
 
   // Mock Library & Reading Queue
   store.library = [
@@ -520,6 +524,8 @@ function initializeBlankStore() {
     vocab: [],
     hafazan: [],
     journal: [],
+    ulumNotes: "",
+    ulumNotesBySurah: {},
     library: [],
     readingQueue: [],
     dailyLogs: {},
@@ -1426,23 +1432,51 @@ function renderJournalTab() {
 }
 
 function renderUlumSection() {
-  // Handle editor values in store
+  const select = document.getElementById("ulum-surah-select");
   const textarea = document.getElementById("ulum-notes-textarea");
-  if (textarea && !textarea.dataset.hooked) {
-    textarea.value = store.ulumNotes || `# Ulum al-Quran Research Notes
+  if (!select || !textarea) return;
+  store.ulumNotesBySurah = store.ulumNotesBySurah || {};
+  const current = select.value;
+  select.innerHTML = '<option value="">General Ulum al-Quran notes</option>';
+  SURAHS_DATA.forEach(surah => {
+    const option = document.createElement('option');
+    option.value = String(surah.id);
+    option.textContent = `${surah.id}. ${surah.name}${store.ulumNotesBySurah[surah.id] ? ' • note' : ''}`;
+    select.appendChild(option);
+  });
+  if ([...select.options].some(option => option.value === current)) select.value = current;
 
-Write down summaries about historical compilations, Makki & Madani contexts, Balaghah (eloquence), and Asbab al-Nuzul here.
-
-Example:
-- **Makki Surahs**: Reveal theological cores, patience, character building.
-- **Madani Surahs**: Lay legal frameworks, community setup, social contracts.`;
-    
+  const loadSelectedNote = () => {
+    textarea.value = select.value ? (store.ulumNotesBySurah[select.value] || '') : (store.ulumNotes || '');
+    textarea.placeholder = select.value
+      ? `Write Ulum al-Quran notes for ${select.options[select.selectedIndex].text.replace(' • note', '')}...`
+      : 'Write general notes about the sciences of the Quran...';
+  };
+  if (!select.dataset.hooked) {
+    select.addEventListener('change', loadSelectedNote);
     textarea.addEventListener("input", (e) => {
-      store.ulumNotes = e.target.value;
+      if (select.value) store.ulumNotesBySurah[select.value] = e.target.value;
+      else store.ulumNotes = e.target.value;
       saveToLocalStorage();
+      const selectedOption = select.options[select.selectedIndex];
+      if (select.value) selectedOption.textContent = `${select.value}. ${SURAHS_DATA[Number(select.value) - 1].name}${e.target.value.trim() ? ' • note' : ''}`;
     });
-    textarea.dataset.hooked = "true";
+    select.dataset.hooked = "true";
   }
+  loadSelectedNote();
+}
+
+function openUlumNotebookForSurah(surahId) {
+  closeSurahDetailModal();
+  const journalNav = document.querySelector('.nav-item[data-tab="journal"]');
+  if (journalNav) journalNav.click();
+  const select = document.getElementById('ulum-surah-select');
+  const textarea = document.getElementById('ulum-notes-textarea');
+  if (!select || !textarea) return;
+  select.value = String(surahId);
+  select.dispatchEvent(new Event('change'));
+  select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => textarea.focus(), 250);
 }
 
 function renderHafazanList() {
@@ -1941,6 +1975,12 @@ function openSurahDetailModal(surahId) {
     button.addEventListener('click', () => editSurahLinkedLog(log.id));
     card.appendChild(button); container.appendChild(card);
   });
+  store.ulumNotesBySurah = store.ulumNotesBySurah || {};
+  const ulumNote = document.getElementById('surah-ulum-note');
+  const attachedNote = store.ulumNotesBySurah[s.id] || '';
+  ulumNote.textContent = attachedNote || 'No Ulum al-Quran note is attached to this surah yet.';
+  ulumNote.classList.toggle('is-empty', !attachedNote);
+  document.getElementById('open-surah-ulum-note').onclick = () => openUlumNotebookForSurah(s.id);
   
   const modal = document.getElementById("surah-detail-modal");
   if (modal) modal.classList.add("active");
@@ -2241,6 +2281,8 @@ function clearAllData() {
     vocab: [],
     hafazan: [],
     journal: [],
+    ulumNotes: "",
+    ulumNotesBySurah: {},
     library: [],
     readingQueue: [],
     dailyLogs: {},

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-dailyjournal">
+  <link rel="stylesheet" href="styles.css?v=20260922-ulum-surah">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -604,8 +604,10 @@
           <!-- Ulum al-Quran Notes Editor -->
           <div class="section-card" style="margin-bottom: 24px;">
             <h3 style="margin-bottom: 12px; color: var(--accent)">📚 Ulum al-Quran Notes Notebook</h3>
+            <label class="form-label" for="ulum-surah-select">Attach note to</label>
+            <select class="form-control" id="ulum-surah-select" style="margin-bottom: 12px;"></select>
             <textarea class="form-control" id="ulum-notes-textarea" style="min-height: 250px; font-family: monospace; font-size: 13px; line-height: 1.6;"></textarea>
-            <p style="font-size:10px; color:var(--text-light); margin-top:8px">Changes auto-save instantly to localStorage / linked file.</p>
+            <p style="font-size:10px; color:var(--text-light); margin-top:8px">Select General or a surah. Changes auto-save and sync with your other devices.</p>
           </div>
           
           <!-- Hafazan Planner -->
@@ -924,6 +926,11 @@
         <p id="surah-log-summary" class="course-meta"></p>
         <div id="surah-linked-logs" class="course-history"></div>
       </section>
+      <section aria-label="Ulum al-Quran notes for this surah">
+        <h4 style="margin: 20px 0 10px">Ulum al-Quran note</h4>
+        <div id="surah-ulum-note" class="surah-ulum-note"></div>
+        <button type="button" class="btn btn-secondary" id="open-surah-ulum-note" style="margin-top: 10px;">Open Ulum notebook</button>
+      </section>
       
       <div style="display: flex; gap: 12px; margin-top: 20px;">
         <button class="btn btn-secondary btn-full" onclick="closeSurahDetailModal()">Cancel</button>
@@ -1016,10 +1023,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-dailyjournal"></script>
-  <script src="courses.js?v=20260922-dailyjournal"></script>
-  <script src="progress.js?v=20260922-dailyjournal"></script>
-  <script src="auto-sync.js?v=20260922-dailyjournal"></script>
+  <script src="app.js?v=20260922-ulum-surah"></script>
+  <script src="courses.js?v=20260922-ulum-surah"></script>
+  <script src="progress.js?v=20260922-ulum-surah"></script>
+  <script src="auto-sync.js?v=20260922-ulum-surah"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
