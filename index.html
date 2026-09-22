@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-mergedjournal">
+  <link rel="stylesheet" href="styles.css?v=20260922-dailyjournal">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -44,8 +44,8 @@
     </div>
 
     <div class="sidebar-global-search">
-      <label class="sr-only" for="global-content-search">Search Daily Logs and Journal</label>
-      <input type="search" id="global-content-search" class="form-control" placeholder="Search logs & journal…" autocomplete="off" aria-controls="global-search-results" aria-expanded="false">
+      <label class="sr-only" for="global-content-search">Search Daily Logs and Tadabbur reflections</label>
+      <input type="search" id="global-content-search" class="form-control" placeholder="Search Daily Logs…" autocomplete="off" aria-controls="global-search-results" aria-expanded="false">
       <div id="global-search-results" class="global-search-results" hidden></div>
     </div>
 
@@ -73,7 +73,7 @@
       </a>
       <a href="#" class="nav-item" data-tab="journal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-        Journal & Hafazan
+        Tadabbur & Hafazan
       </a>
       <a href="#" class="nav-item" data-tab="reflections">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -589,47 +589,8 @@
         <!-- Left Side: Add Reflection and list -->
         <div>
           <div class="section-card">
-            <h3 style="margin-bottom: 20px; color: var(--primary)">🌱 New Tadabbur Journal Entry</h3>
-            <form id="add-journal-form">
-              <div class="form-group row-2">
-                <div>
-                  <label class="form-label">Surah Context</label>
-                  <input type="text" class="form-control" id="add-j-surah" required placeholder="e.g. Ash-Sharh">
-                </div>
-                <div>
-                  <label class="form-label">Ayah Number(s)</label>
-                  <input type="text" class="form-control" id="add-j-ayah" required placeholder="e.g. 5-6">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tadabbur & Reflections</label>
-                <textarea class="form-control" id="add-j-reflection" required placeholder="What is the deeper meaning, grammatical gem, or context of this verse?"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Personal Life Lesson</label>
-                <textarea class="form-control" id="add-j-lesson" required placeholder="How does this apply to your daily challenges and life?"></textarea>
-              </div>
-              <div class="form-group row-2">
-                <div>
-                  <label class="form-label">Action Item</label>
-                  <input type="text" class="form-control" id="add-j-action" placeholder="What will you physically change or practice?">
-                </div>
-                <div>
-                  <label class="form-label">Personal Dua</label>
-                  <input type="text" class="form-control" id="add-j-dua" placeholder="Arabic or translation dua relating to this verse">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tags (comma-separated)</label>
-                <input type="text" class="form-control" id="add-j-tags" placeholder="e.g. Hope, Patience, Action">
-              </div>
-              <button type="submit" class="btn btn-primary btn-full">Save Entry</button>
-            </form>
-          </div>
-          
-          <div class="section-card">
             <div class="card-header-row">
-              <h3 class="card-title">📖 Tadabbur Feed</h3>
+              <div><h3 class="card-title">📖 Tadabbur from Daily Logs</h3><p class="course-meta">Add or edit reflections from the Daily Logs page.</p></div>
               <input type="text" class="form-control" id="journal-search-input" placeholder="Search reflections or tags..." style="width: 200px;">
             </div>
             <div class="journal-cards-container" id="journal-cards-grid">
@@ -1055,10 +1016,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-mergedjournal"></script>
-  <script src="courses.js?v=20260922-mergedjournal"></script>
-  <script src="progress.js?v=20260922-mergedjournal"></script>
-  <script src="auto-sync.js?v=20260922-mergedjournal"></script>
+  <script src="app.js?v=20260922-dailyjournal"></script>
+  <script src="courses.js?v=20260922-dailyjournal"></script>
+  <script src="progress.js?v=20260922-dailyjournal"></script>
+  <script src="auto-sync.js?v=20260922-dailyjournal"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

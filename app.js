@@ -200,11 +200,8 @@ function generateMockData() {
     { id: 5, word: "يَوْم", meaning: "Day", root: "ي - و - م", freq: 405, verse: "مَالِكِ يَوْمِ الدِّينِ", lesson: "Dream Unit 1", memorized: false, notes: "Time adverb" }
   ];
 
-  // Mock Tadabbur Journal
-  store.journal = [
-    { id: 1, date: "2026-07-10", surah: "Al-Fatihah", ayah: "5", reflection: "We say 'You alone we worship, and You alone we ask for help'. Worship comes before seeking help. This teaches that effort and devotion must precede expecting ease and divine intervention. Seeking help itself is a form of worship.", lesson: "Put in the work first, then place full trust in Allah.", action: "Dedicate morning sessions purely to worship and focus before study.", dua: "اللهم أعني على ذكرك وشكرك وحسن عبادتك", tags: ["Ibadah", "Tawakkul"] },
-    { id: 2, date: "2026-07-15", surah: "Ash-Sharh", ayah: "6", reflection: "The repetition of 'Indeed, with hardship there is ease'. Notice the word 'with' (ma'a) not 'after' (ba'da). This means ease is packaged inside the hardship itself. We must search for the opportunities and ease within the trials.", lesson: "No trial is empty of blessings.", action: "Write down 3 things to be grateful for when facing a difficult study topic.", dua: "رب اشرح لي صدري ويسر لي أمري", tags: ["Gratitude", "Hope"] }
-  ];
+  // Tadabbur reflections now belong to Daily Logs.
+  store.journal = [];
 
   // Mock Library & Reading Queue
   store.library = [
@@ -1171,7 +1168,6 @@ function getCategoryEmoji(category) {
 }
 
 function combinedJournalEntries() {
-  const legacy = store.journal.map(entry => ({...entry, entryType: 'journal', entryId: entry.id}));
   const linked = store.sessions.filter(session => session.reflection || session.lifeLesson || session.action || session.dua || session.tags?.length)
     .map(session => ({
       entryType: 'session', entryId: session.id, date: session.date, surah: session.surah || session.course || session.category,
@@ -1179,7 +1175,7 @@ function combinedJournalEntries() {
       action: session.action || '', dua: session.dua || '', tags: Array.isArray(session.tags) ? session.tags : [],
       session
     }));
-  return [...legacy, ...linked].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  return linked.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 }
 
 function globalSearchHaystack(values) {
@@ -1193,10 +1189,7 @@ function globalSearchMatches(query) {
     session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah,
     session.topic, session.notes, session.reflection, session.lifeLesson, session.action, session.dua, session.tags
   ]).includes(text)).map(session => ({type:'daily', id:session.id, title:`${session.date} · ${session.surah || session.course || session.category}`, detail:session.reflection || session.notes || session.lesson || session.topic || `${session.minutes} minutes`}));
-  const journal = store.journal.filter(entry => globalSearchHaystack([
-    entry.date, entry.surah, entry.ayah, entry.reflection, entry.lesson, entry.action, entry.dua, entry.tags
-  ]).includes(text)).map(entry => ({type:'journal', id:entry.id, title:`${entry.surah} · Ayah ${entry.ayah}`, detail:entry.reflection || entry.lesson || entry.date}));
-  return [...daily, ...journal].slice(0, 12);
+  return daily.slice(0, 12);
 }
 
 function renderGlobalSearch(query) {
@@ -1209,12 +1202,12 @@ function renderGlobalSearch(query) {
   if (query.trim().length < 2) { results.hidden = true; return; }
   results.hidden = false;
   if (!matches.length) {
-    const empty = document.createElement('p'); empty.className = 'global-search-empty'; empty.textContent = 'No matching Daily Logs or Journal entries.'; results.appendChild(empty); return;
+    const empty = document.createElement('p'); empty.className = 'global-search-empty'; empty.textContent = 'No matching Daily Logs.'; results.appendChild(empty); return;
   }
   matches.forEach(match => {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'global-search-result';
     button.dataset.globalResultType = match.type; button.dataset.globalResultId = String(match.id);
-    const type = document.createElement('small'); type.textContent = match.type === 'daily' ? 'DAILY LOG' : 'JOURNAL';
+    const type = document.createElement('small'); type.textContent = 'DAILY LOG';
     const title = document.createElement('strong'); title.textContent = match.title;
     const detail = document.createElement('span'); detail.textContent = match.detail;
     button.append(type, title, detail); button.addEventListener('click', () => openGlobalSearchResult(match.type, match.id)); results.appendChild(button);
@@ -1225,17 +1218,7 @@ function openGlobalSearchResult(type, id) {
   const input = document.getElementById('global-content-search');
   document.getElementById('global-search-results').hidden = true;
   input.setAttribute('aria-expanded', 'false');
-  if (type === 'daily') { editStudySession(id); return; }
-  journalSearchQuery = '';
-  const journalSearch = document.getElementById('journal-search-input');
-  if (journalSearch) journalSearch.value = '';
-  document.querySelector('[data-tab="journal"]').click();
-  requestAnimationFrame(() => {
-    const card = document.querySelector(`[data-journal-type="journal"][data-journal-id="${id}"]`);
-    if (!card) return;
-    card.scrollIntoView({behavior:'smooth', block:'center'}); card.classList.add('global-result-highlight');
-    setTimeout(() => card.classList.remove('global-result-highlight'), 2500);
-  });
+  editStudySession(id);
 }
 
 function deleteStudySession(sessionId) {
@@ -1816,33 +1799,6 @@ function setupFormListeners() {
     });
   }
   
-  // Hook Journal Form
-  const journalForm = document.getElementById("add-journal-form");
-  if (journalForm) {
-    journalForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      
-      const newJournal = {
-        id: store.journal.length + 1,
-        date: localStudyDate(),
-        surah: document.getElementById("add-j-surah").value,
-        ayah: document.getElementById("add-j-ayah").value,
-        reflection: document.getElementById("add-j-reflection").value,
-        lesson: document.getElementById("add-j-lesson").value,
-        action: document.getElementById("add-j-action").value,
-        dua: document.getElementById("add-j-dua").value,
-        tags: document.getElementById("add-j-tags").value.split(",").map(t => t.trim()).filter(t => t.length > 0)
-      };
-      
-      store.journal.push(newJournal);
-      journalForm.reset();
-      
-      saveToLocalStorage();
-      renderJournalTab();
-      showToast("🌱 Reflections saved in Tadabbur Journal.");
-    });
-  }
-  
   // Reading Queue Form
   const rqForm = document.getElementById("add-rq-form");
   if (rqForm) {
@@ -2109,7 +2065,7 @@ function openBadgesModal() {
     { id: "b5", emoji: "🚀", title: "50 Hours Study", desc: "Reach 50 hours of study time", cond: totalHours >= 50 },
     { id: "b6", emoji: "🇸🇦", title: "Arabic Beginner", desc: "Memorize 10 vocabulary words", cond: vocabCount >= 10 },
     { id: "b7", emoji: "🧠", title: "Hafazan Pioneer", desc: "Add a memorized surah", cond: store.hafazan.length >= 1 },
-    { id: "b8", emoji: "✍️", title: "Journal Writer", desc: "Write 2 Tadabbur reflections", cond: store.journal.length >= 2 }
+    { id: "b8", emoji: "✍️", title: "Journal Writer", desc: "Write 2 Tadabbur reflections", cond: store.sessions.filter(session => session.reflection).length >= 2 }
   ];
   
   const grid = document.getElementById("badges-modal-grid");
