@@ -45,18 +45,35 @@ function cancelStudyEdit() {
   editingStudyId = null;
   document.getElementById('cancel-study-edit').hidden = true;
   document.querySelector('#log-session-form button[type="submit"]').textContent = 'Save study session';
+  document.getElementById('session-form-title').textContent = '📝 Log Study Session';
 }
-function editCourseStudy(id) {
+function editStudySession(id) {
   const session = store.sessions.find(s => s.id === id);
-  document.getElementById('course-dialog').close();
-  continueCourse(session.courseId);
+  if (!session) return;
+  const dialog = document.getElementById('course-dialog');
+  if (dialog.open) dialog.close();
+  cancelStudyEdit();
+  const form = document.getElementById('log-session-form');
+  form.reset();
+  refreshCourseSelect();
+  document.querySelector('[data-tab="logs"]').click();
   editingStudyId = id;
-  for (const [field, key] of Object.entries({date:'date',time:'time',minutes:'minutes',lesson:'lesson',surah:'surah',topic:'topic',difficulty:'difficulty',rating:'rating',notes:'notes','lesson-number':'lessonNumber','study-status':'studyStatus'})) {
+
+  for (const [field, key] of Object.entries({source:'source',category:'category'})) {
+    const select = document.getElementById(`sess-${field}`);
+    const value = session[key] || '';
+    if (value && ![...select.options].some(option => option.value === value)) select.add(new Option(value, value));
+  }
+  for (const [field, key] of Object.entries({date:'date',time:'time',minutes:'minutes',source:'source',category:'category',course:'courseId',lesson:'lesson',surah:'surah',topic:'topic',difficulty:'difficulty',rating:'rating',notes:'notes','lesson-number':'lessonNumber','study-status':'studyStatus'})) {
     document.getElementById(`sess-${field}`).value = session[key] ?? (field === 'study-status' ? 'in-progress' : '');
   }
   document.getElementById('cancel-study-edit').hidden = false;
   document.querySelector('#log-session-form button[type="submit"]').textContent = 'Save changes';
+  document.getElementById('session-form-title').textContent = '✏️ View / Edit Daily Log';
+  form.scrollIntoView({behavior:'smooth', block:'start'});
+  showToast('Daily Log opened for editing.');
 }
+function editCourseStudy(id) { editStudySession(id); }
 function escapeCourseText(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }

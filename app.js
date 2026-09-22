@@ -1074,6 +1074,11 @@ function renderLogsTab() {
   
   // Sort sessions: newest first
   const sortedSessions = [...store.sessions].sort((a,b) => new Date(b.date + "T" + b.time) - new Date(a.date + "T" + a.time));
+
+  if (!sortedSessions.length) {
+    tableBody.innerHTML = `<p class="empty-log-message">No study sessions yet. Use the form to add your first Daily Log.</p>`;
+    return;
+  }
   
   sortedSessions.forEach(s => {
     const tr = document.createElement("tr");
@@ -1084,15 +1089,23 @@ function renderLogsTab() {
           ${getCategoryEmoji(s.category)}
         </div>
         <div class="log-item-details">
-          <h4>${s.category}</h4>
-          <span>${s.date} ${s.time} • Source: ${s.source}</span>
+          <h4>${escapeCourseText(s.category)}</h4>
+          <span>${escapeCourseText(s.date)} ${escapeCourseText(s.time)} • Source: ${escapeCourseText(s.source)}</span>
+          <div class="log-item-description">
+            ${s.course ? `<p><strong>Course:</strong> ${escapeCourseText(s.course)}</p>` : `<p><strong>Course:</strong> Independent study</p>`}
+            ${s.lesson || s.topic ? `<p><strong>Lesson:</strong> ${escapeCourseText(s.lesson || s.topic)}</p>` : ""}
+            ${s.surah ? `<p><strong>Surah:</strong> ${escapeCourseText(s.surah)}</p>` : ""}
+            ${s.studyStatus ? `<p><strong>Progress:</strong> ${escapeCourseText(s.studyStatus)}</p>` : ""}
+            ${s.notes ? `<p class="log-item-notes"><strong>Notes:</strong> ${escapeCourseText(s.notes)}</p>` : ""}
+          </div>
         </div>
       </div>
       <div class="log-item-stats">
-        ${s.course ? `<span class="tag-badge" style="background-color: var(--accent-light); color: var(--accent); font-size:10px">${s.course}</span>` : ""}
         <span class="log-item-time">${s.minutes} min</span>
         <span class="log-item-rating">${"★".repeat(s.rating || 5)}</span>
-        <button class="log-delete-btn" onclick="deleteStudySession(${s.id})">
+        <button type="button" class="log-edit-btn" onclick="editStudySession(${s.id})">Edit log</button>
+        <button type="button" class="log-day-btn" onclick="openDailySummaryModal('${escapeCourseText(s.date)}')">Day reflection</button>
+        <button type="button" class="log-delete-btn" aria-label="Delete this study session" onclick="deleteStudySession(${s.id})">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
       </div>
@@ -1119,6 +1132,7 @@ function deleteStudySession(sessionId) {
   if (confirm("Are you sure you want to delete this study session? All summaries will adjust automatically.")) {
     const session = store.sessions.find(s => s.id === sessionId);
     if (!session) return;
+    if (editingStudyId === sessionId) cancelStudyEdit();
     
     // Filter session array
     store.sessions = store.sessions.filter(s => s.id !== sessionId);
@@ -1140,8 +1154,7 @@ function deleteStudySession(sessionId) {
     }
     
     saveToLocalStorage();
-    renderLogsTab();
-    updateSidebarStats();
+    renderAllViews();
     showToast("❌ Session log deleted.");
   }
 }
@@ -1596,6 +1609,7 @@ function setupFormListeners() {
       const mins = parseInt(document.getElementById("sess-minutes").value) || 30;
       const dateStr = document.getElementById("sess-date").value || localStudyDate();
       
+      const wasEditing = editingStudyId !== null;
       const newSession = {
         id: nextRecordId(store.sessions),
         date: dateStr,
@@ -1627,7 +1641,7 @@ function setupFormListeners() {
       
       saveToLocalStorage();
       renderAllViews();
-      showToast("📝 Study Session logged successfully!");
+      showToast(wasEditing ? "✅ Daily Log updated successfully!" : "📝 Study Session logged successfully!");
     });
   }
   
@@ -1874,8 +1888,9 @@ function openDailySummaryModal(dateStr) {
   } else {
     daySessions.forEach(s => {
       sessionsContainer.innerHTML += `
-        <li style="font-size:12px; margin-bottom: 8px; list-style:circle; margin-left: 16px">
+        <li style="font-size:12px; margin-bottom: 12px; list-style:circle; margin-left: 16px">
           <strong>${escapeCourseText(s.time)} • ${escapeCourseText(s.category)} (${s.minutes}m)</strong> - ${escapeCourseText(store.courses.find(c => c.id === s.courseId)?.name || s.course || s.source)}: ${escapeCourseText(s.lesson || s.topic || "Self study")} · ${escapeCourseText(s.studyStatus || "Study")}
+          <button type="button" class="log-edit-btn modal-session-edit" onclick="closeDailySummaryModal(); editStudySession(${s.id})">View / edit log</button>
         </li>
       `;
     });
