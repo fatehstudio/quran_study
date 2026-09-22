@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-surahnumbers">
+  <link rel="stylesheet" href="styles.css?v=20260922-mergedjournal">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -43,6 +43,12 @@
       </div>
     </div>
 
+    <div class="sidebar-global-search">
+      <label class="sr-only" for="global-content-search">Search Daily Logs and Journal</label>
+      <input type="search" id="global-content-search" class="form-control" placeholder="Search logs & journal…" autocomplete="off" aria-controls="global-search-results" aria-expanded="false">
+      <div id="global-search-results" class="global-search-results" hidden></div>
+    </div>
+
     <!-- Navigation List -->
     <nav class="sidebar-nav">
       <a href="#" class="nav-item active" data-tab="dashboard">
@@ -51,7 +57,7 @@
       </a>
       <a href="#" class="nav-item" data-tab="logs">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="2" x2="22" y2="6"></line><path d="M7.5 10.5L19 21.5"></path><path d="M11.5 6.5L3 15.5"></path><path d="M16 16l-3.5-3.5"></path></svg>
-        Daily Logs
+        Daily Logs & Journal
       </a>
       <a href="#" class="nav-item" data-tab="trackers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
@@ -358,13 +364,32 @@
               <label class="form-label">Notes & Highlights</label>
               <textarea class="form-control" id="sess-notes" placeholder="Write down key vocabulary, rules, or questions encountered..."></textarea>
             </div>
+            <details class="daily-tadabbur-fields">
+              <summary>🌱 Add Tadabbur Journal to this Daily Log</summary>
+              <div class="form-group">
+                <label class="form-label">Tadabbur & Reflection</label>
+                <textarea class="form-control" id="sess-reflection" placeholder="What did this lesson teach you?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Personal Life Lesson</label>
+                <textarea class="form-control" id="sess-life-lesson" placeholder="How does this apply to your life?"></textarea>
+              </div>
+              <div class="form-group row-2">
+                <div><label class="form-label">Action Item</label><input type="text" class="form-control" id="sess-action" placeholder="What will you practise?"></div>
+                <div><label class="form-label">Personal Dua</label><input type="text" class="form-control" id="sess-dua" placeholder="Dua related to this lesson"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tags</label>
+                <input type="text" class="form-control" id="sess-tags" placeholder="Hope, Patience, Tawakkul">
+              </div>
+            </details>
             <button type="submit" class="btn btn-primary btn-full">Save Session Log</button>
           </form>
         </div>
         
         <!-- Sessions Log list -->
         <div class="section-card">
-          <h3 style="margin-bottom: 20px; color: var(--accent)">📋 Detailed Study Session Logs</h3>
+          <h3 style="margin-bottom: 20px; color: var(--accent)">📋 Daily Logs & Tadabbur Journal</h3>
           <div class="daily-log-search-bar" aria-label="Search Daily Logs">
             <label class="form-label" for="daily-log-search">Search your Daily Logs
               <input type="search" class="form-control" id="daily-log-search" placeholder="Search notes, lesson, course, topic or date">
@@ -1030,10 +1055,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-surahnumbers"></script>
-  <script src="courses.js?v=20260922-surahnumbers"></script>
-  <script src="progress.js?v=20260922-surahnumbers"></script>
-  <script src="auto-sync.js?v=20260922-surahnumbers"></script>
+  <script src="app.js?v=20260922-mergedjournal"></script>
+  <script src="courses.js?v=20260922-mergedjournal"></script>
+  <script src="progress.js?v=20260922-mergedjournal"></script>
+  <script src="auto-sync.js?v=20260922-mergedjournal"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

@@ -1134,6 +1134,11 @@ function renderLogsTab() {
             ${s.surah ? `<p><strong>Surah:</strong> ${escapeCourseText(s.surah)}</p>` : ""}
             ${s.studyStatus ? `<p><strong>Progress:</strong> ${escapeCourseText(s.studyStatus)}</p>` : ""}
             ${s.notes ? `<p class="log-item-notes"><strong>Notes:</strong> ${escapeCourseText(s.notes)}</p>` : ""}
+            ${s.reflection ? `<p class="log-item-reflection"><strong>Reflection:</strong> ${escapeCourseText(s.reflection)}</p>` : ""}
+            ${s.lifeLesson ? `<p><strong>Life lesson:</strong> ${escapeCourseText(s.lifeLesson)}</p>` : ""}
+            ${s.action ? `<p><strong>Action:</strong> ${escapeCourseText(s.action)}</p>` : ""}
+            ${s.dua ? `<p><strong>Dua:</strong> ${escapeCourseText(s.dua)}</p>` : ""}
+            ${Array.isArray(s.tags) && s.tags.length ? `<p><strong>Tags:</strong> ${s.tags.map(tag => `#${escapeCourseText(tag)}`).join(" ")}</p>` : ""}
           </div>
         </div>
       </div>
@@ -1163,6 +1168,74 @@ function getCategoryEmoji(category) {
     "Murajaah": "🔄"
   };
   return emojis[category] || "🕌";
+}
+
+function combinedJournalEntries() {
+  const legacy = store.journal.map(entry => ({...entry, entryType: 'journal', entryId: entry.id}));
+  const linked = store.sessions.filter(session => session.reflection || session.lifeLesson || session.action || session.dua || session.tags?.length)
+    .map(session => ({
+      entryType: 'session', entryId: session.id, date: session.date, surah: session.surah || session.course || session.category,
+      ayah: session.ayah || '', reflection: session.reflection || '', lesson: session.lifeLesson || '',
+      action: session.action || '', dua: session.dua || '', tags: Array.isArray(session.tags) ? session.tags : [],
+      session
+    }));
+  return [...legacy, ...linked].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+}
+
+function globalSearchHaystack(values) {
+  return values.flatMap(value => Array.isArray(value) ? value : [value]).filter(Boolean).join(' ').toLocaleLowerCase();
+}
+
+function globalSearchMatches(query) {
+  const text = query.trim().toLocaleLowerCase();
+  if (text.length < 2) return [];
+  const daily = store.sessions.filter(session => globalSearchHaystack([
+    session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah,
+    session.topic, session.notes, session.reflection, session.lifeLesson, session.action, session.dua, session.tags
+  ]).includes(text)).map(session => ({type:'daily', id:session.id, title:`${session.date} · ${session.surah || session.course || session.category}`, detail:session.reflection || session.notes || session.lesson || session.topic || `${session.minutes} minutes`}));
+  const journal = store.journal.filter(entry => globalSearchHaystack([
+    entry.date, entry.surah, entry.ayah, entry.reflection, entry.lesson, entry.action, entry.dua, entry.tags
+  ]).includes(text)).map(entry => ({type:'journal', id:entry.id, title:`${entry.surah} · Ayah ${entry.ayah}`, detail:entry.reflection || entry.lesson || entry.date}));
+  return [...daily, ...journal].slice(0, 12);
+}
+
+function renderGlobalSearch(query) {
+  const results = document.getElementById('global-search-results');
+  const input = document.getElementById('global-content-search');
+  if (!results || !input) return;
+  results.innerHTML = '';
+  const matches = globalSearchMatches(query);
+  input.setAttribute('aria-expanded', String(query.trim().length >= 2));
+  if (query.trim().length < 2) { results.hidden = true; return; }
+  results.hidden = false;
+  if (!matches.length) {
+    const empty = document.createElement('p'); empty.className = 'global-search-empty'; empty.textContent = 'No matching Daily Logs or Journal entries.'; results.appendChild(empty); return;
+  }
+  matches.forEach(match => {
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'global-search-result';
+    button.dataset.globalResultType = match.type; button.dataset.globalResultId = String(match.id);
+    const type = document.createElement('small'); type.textContent = match.type === 'daily' ? 'DAILY LOG' : 'JOURNAL';
+    const title = document.createElement('strong'); title.textContent = match.title;
+    const detail = document.createElement('span'); detail.textContent = match.detail;
+    button.append(type, title, detail); button.addEventListener('click', () => openGlobalSearchResult(match.type, match.id)); results.appendChild(button);
+  });
+}
+
+function openGlobalSearchResult(type, id) {
+  const input = document.getElementById('global-content-search');
+  document.getElementById('global-search-results').hidden = true;
+  input.setAttribute('aria-expanded', 'false');
+  if (type === 'daily') { editStudySession(id); return; }
+  journalSearchQuery = '';
+  const journalSearch = document.getElementById('journal-search-input');
+  if (journalSearch) journalSearch.value = '';
+  document.querySelector('[data-tab="journal"]').click();
+  requestAnimationFrame(() => {
+    const card = document.querySelector(`[data-journal-type="journal"][data-journal-id="${id}"]`);
+    if (!card) return;
+    card.scrollIntoView({behavior:'smooth', block:'center'}); card.classList.add('global-result-highlight');
+    setTimeout(() => card.classList.remove('global-result-highlight'), 2500);
+  });
 }
 
 function deleteStudySession(sessionId) {
@@ -1325,40 +1398,39 @@ function renderJournalTab() {
   
   container.innerHTML = "";
   
-  const filtered = store.journal.filter(j => {
-    return j.surah.toLowerCase().includes(journalSearchQuery.toLowerCase()) || 
-           j.reflection.toLowerCase().includes(journalSearchQuery.toLowerCase()) || 
-           j.tags.some(t => t.toLowerCase().includes(journalSearchQuery.toLowerCase()));
-  });
+  const filtered = combinedJournalEntries().filter(j => globalSearchHaystack([j.surah, j.ayah, j.reflection, j.lesson, j.action, j.dua, j.tags]).includes(journalSearchQuery.toLowerCase()));
   
   filtered.forEach(j => {
     const card = document.createElement("div");
     card.className = "journal-card";
+    card.dataset.journalType = j.entryType;
+    card.dataset.journalId = String(j.entryId);
     card.innerHTML = `
       <div class="journal-card-header">
-        <span class="journal-surah-ref">${j.surah} • Ayah ${j.ayah}</span>
-        <span class="journal-date">${j.date}</span>
+        <span class="journal-surah-ref">${escapeCourseText(j.surah)}${j.ayah ? ` • Ayah ${escapeCourseText(j.ayah)}` : ''}</span>
+        <span class="journal-date">${escapeCourseText(j.date)}${j.entryType === 'session' ? ' · Daily Log' : ''}</span>
       </div>
-      <p class="journal-reflection">"${j.reflection}"</p>
+      ${j.reflection ? `<p class="journal-reflection">"${escapeCourseText(j.reflection)}"</p>` : ''}
       <div class="journal-lessons-section">
-        <div class="lesson-row">
+        ${j.lesson ? `<div class="lesson-row">
           <span class="lesson-lbl">Life Lesson:</span>
-          <span>${j.lesson}</span>
-        </div>
+          <span>${escapeCourseText(j.lesson)}</span>
+        </div>` : ''}
         ${j.action ? `
         <div class="lesson-row">
           <span class="lesson-lbl" style="color: var(--primary)">Action Item:</span>
-          <span>${j.action}</span>
+          <span>${escapeCourseText(j.action)}</span>
         </div>` : ""}
         ${j.dua ? `
         <div class="lesson-row">
           <span class="lesson-lbl" style="color: var(--info)">Dua:</span>
-          <span style="font-family: sans-serif; font-weight: 500">${j.dua}</span>
+          <span style="font-family: sans-serif; font-weight: 500">${escapeCourseText(j.dua)}</span>
         </div>` : ""}
       </div>
       <div class="journal-tags">
-        ${j.tags.map(t => `<span class="tag-badge">#${t}</span>`).join("")}
+        ${(j.tags || []).map(t => `<span class="tag-badge">#${escapeCourseText(t)}</span>`).join("")}
       </div>
+      ${j.entryType === 'session' ? `<button type="button" class="btn btn-secondary" onclick="editStudySession(${j.entryId})">View / edit Daily Log</button>` : ''}
     `;
     container.appendChild(card);
   });
@@ -1663,6 +1735,11 @@ function setupFormListeners() {
         rating: parseInt(document.getElementById("sess-rating").value) || 5,
         notes: document.getElementById("sess-notes").value
       };
+      newSession.reflection = document.getElementById('sess-reflection').value;
+      newSession.lifeLesson = document.getElementById('sess-life-lesson').value;
+      newSession.action = document.getElementById('sess-action').value;
+      newSession.dua = document.getElementById('sess-dua').value;
+      newSession.tags = document.getElementById('sess-tags').value.split(',').map(tag => tag.trim()).filter(Boolean);
       
       newSession.studyStatus = document.getElementById("sess-study-status").value;
       newSession.lessonNumber = Number(document.getElementById("sess-lesson-number").value) || null;
@@ -1895,7 +1972,7 @@ function openSurahDetailModal(surahId) {
     heading.textContent = `${log.date} ${log.time || ''} · ${log.minutes} min · ${log.category || ''}`;
     card.appendChild(heading);
     const course = store.courses.find(course => course.id === log.courseId);
-    for (const [label, value] of [['Course / source', course?.name || log.course || log.source], ['Lesson', log.lesson], ['Topic', log.topic], ['Notes', log.notes]]) {
+    for (const [label, value] of [['Course / source', course?.name || log.course || log.source], ['Lesson', log.lesson], ['Topic', log.topic], ['Notes', log.notes], ['Reflection', log.reflection], ['Life lesson', log.lifeLesson], ['Action', log.action], ['Dua', log.dua], ['Tags', Array.isArray(log.tags) ? log.tags.join(', ') : '']]) {
       if (!value) continue;
       const detail = document.createElement('p');
       detail.style.whiteSpace = 'pre-wrap';
@@ -2301,6 +2378,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   setupFormListeners();
   setupProfileAutoSave();
   setupDailyLogSearch();
+
+  const globalSearch = document.getElementById('global-content-search');
+  globalSearch?.addEventListener('input', event => renderGlobalSearch(event.target.value));
+  globalSearch?.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { document.getElementById('global-search-results').hidden = true; globalSearch.setAttribute('aria-expanded', 'false'); }
+  });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.sidebar-global-search')) {
+      document.getElementById('global-search-results').hidden = true;
+      globalSearch?.setAttribute('aria-expanded', 'false');
+    }
+  });
 
   const dailyLogSearch = document.getElementById("daily-log-search");
   const dailyLogSurah = document.getElementById("daily-log-surah-filter");
