@@ -1066,17 +1066,48 @@ function renderSurahGrid() {
 }
 
 // Render Logs Tab
+let dailyLogSearchQuery = "";
+let dailyLogSurahFilter = "";
+
+function setupDailyLogSearch() {
+  const surahNames = [...new Set([
+    ...SURAHS_DATA.map(surah => surah.name),
+    ...store.sessions.map(session => session.surah).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b));
+  const datalist = document.getElementById("surah-name-options");
+  const filter = document.getElementById("daily-log-surah-filter");
+  if (datalist) datalist.innerHTML = surahNames.map(name => `<option value="${escapeCourseText(name)}"></option>`).join("");
+  if (filter) {
+    const selected = filter.value || dailyLogSurahFilter;
+    filter.innerHTML = `<option value="">All surahs</option>` + surahNames.map(name => `<option value="${escapeCourseText(name)}">${escapeCourseText(name)}</option>`).join("");
+    filter.value = selected;
+  }
+}
+
 function renderLogsTab() {
   const tableBody = document.getElementById("sessions-table-body");
   if (!tableBody) return;
+
+  setupDailyLogSearch();
   
   tableBody.innerHTML = "";
   
   // Sort sessions: newest first
-  const sortedSessions = [...store.sessions].sort((a,b) => new Date(b.date + "T" + b.time) - new Date(a.date + "T" + a.time));
+  const query = dailyLogSearchQuery.trim().toLocaleLowerCase();
+  const sortedSessions = [...store.sessions]
+    .filter(session => {
+      if (dailyLogSurahFilter && session.surah !== dailyLogSurahFilter) return false;
+      if (!query) return true;
+      return [session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah, session.topic, session.difficulty, session.studyStatus, session.notes]
+        .filter(Boolean).join(" ").toLocaleLowerCase().includes(query);
+    })
+    .sort((a,b) => new Date(b.date + "T" + b.time) - new Date(a.date + "T" + a.time));
+
+  const count = document.getElementById("daily-log-result-count");
+  if (count) count.textContent = `${sortedSessions.length} of ${store.sessions.length} Daily Logs shown`;
 
   if (!sortedSessions.length) {
-    tableBody.innerHTML = `<p class="empty-log-message">No study sessions yet. Use the form to add your first Daily Log.</p>`;
+    tableBody.innerHTML = `<p class="empty-log-message">${store.sessions.length ? "No Daily Logs match this search." : "No study sessions yet. Use the form to add your first Daily Log."}</p>`;
     return;
   }
   
@@ -2221,6 +2252,26 @@ window.addEventListener("DOMContentLoaded", async () => {
   setupRouter();
   setupFormListeners();
   setupProfileAutoSave();
+  setupDailyLogSearch();
+
+  const dailyLogSearch = document.getElementById("daily-log-search");
+  const dailyLogSurah = document.getElementById("daily-log-surah-filter");
+  const dailyLogClear = document.getElementById("daily-log-clear-search");
+  dailyLogSearch?.addEventListener("input", event => {
+    dailyLogSearchQuery = event.target.value;
+    renderLogsTab();
+  });
+  dailyLogSurah?.addEventListener("change", event => {
+    dailyLogSurahFilter = event.target.value;
+    renderLogsTab();
+  });
+  dailyLogClear?.addEventListener("click", () => {
+    dailyLogSearchQuery = "";
+    dailyLogSurahFilter = "";
+    dailyLogSearch.value = "";
+    dailyLogSurah.value = "";
+    renderLogsTab();
+  });
   
   // Surah filter bindings
   const sFilter = document.getElementById("surah-filter-select");

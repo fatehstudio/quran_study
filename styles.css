@@ -1089,6 +1089,28 @@ textarea.form-control {
   text-align: center;
 }
 
+.daily-log-search-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(180px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.daily-log-search-bar label {
+  margin: 0;
+}
+
+.daily-log-clear {
+  white-space: nowrap;
+}
+
+.daily-log-result-count {
+  margin: 4px 0 14px;
+  color: var(--text-light);
+  font-size: 11px;
+}
+
 .log-delete-btn:hover {
   color: var(--danger);
 }
@@ -1873,6 +1895,8 @@ button, a, input, select, textarea { touch-action: manipulation; }
   .log-item-details { min-width: 0; flex: 1; }
   .log-item-stats { width: 100%; flex-wrap: wrap; gap: 8px; padding-left: 48px; }
   .log-edit-btn, .log-day-btn { min-height: 44px; }
+  .daily-log-search-bar { grid-template-columns: 1fr; }
+  .daily-log-clear { width: 100%; }
 }
 @media (max-width: 360px) {
   .dashboard-grid { grid-template-columns: 1fr; }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-logedit">
+  <link rel="stylesheet" href="styles.css?v=20260922-logsearch">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -326,7 +326,8 @@
             <div class="form-group row-2">
               <div>
                 <label class="form-label">Surah Context (Optional)</label>
-                <input type="text" class="form-control" id="sess-surah" placeholder="e.g. Al-Mulk">
+                <input type="text" list="surah-name-options" class="form-control" id="sess-surah" placeholder="Type or choose a surah" autocomplete="off">
+                <datalist id="surah-name-options"></datalist>
               </div>
               <div>
                 <label class="form-label">Topic / Details</label>
@@ -364,6 +365,16 @@
         <!-- Sessions Log list -->
         <div class="section-card">
           <h3 style="margin-bottom: 20px; color: var(--accent)">📋 Detailed Study Session Logs</h3>
+          <div class="daily-log-search-bar" aria-label="Search Daily Logs">
+            <label class="form-label" for="daily-log-search">Search your Daily Logs
+              <input type="search" class="form-control" id="daily-log-search" placeholder="Search notes, lesson, course, topic or date">
+            </label>
+            <label class="form-label" for="daily-log-surah-filter">Filter by surah
+              <select class="form-control" id="daily-log-surah-filter"><option value="">All surahs</option></select>
+            </label>
+            <button type="button" class="btn btn-secondary daily-log-clear" id="daily-log-clear-search">Clear search</button>
+          </div>
+          <p class="daily-log-result-count" id="daily-log-result-count" aria-live="polite"></p>
           <div style="overflow-x: auto;">
             <div class="logs-list" id="sessions-table-body">
               <!-- Session items dynamically injected -->
@@ -1014,10 +1025,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-logedit"></script>
-  <script src="courses.js?v=20260922-logedit"></script>
-  <script src="progress.js?v=20260922-logedit"></script>
-  <script src="auto-sync.js?v=20260922-logedit"></script>
+  <script src="app.js?v=20260922-logsearch"></script>
+  <script src="courses.js?v=20260922-logsearch"></script>
+  <script src="progress.js?v=20260922-logsearch"></script>
+  <script src="auto-sync.js?v=20260922-logsearch"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
