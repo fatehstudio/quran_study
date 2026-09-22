@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20260922-logsearch">
+  <link rel="stylesheet" href="styles.css?v=20260922-surahlogs">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -933,6 +933,11 @@
         <label class="form-label">Notes & Reflections for this Surah</label>
         <textarea class="form-control" id="surah-modal-notes" placeholder="Write down structural connection highlights or personal notes..."></textarea>
       </div>
+      <section aria-label="Daily Logs for this surah">
+        <h4 style="margin: 20px 0 10px">Daily Logs for this surah</h4>
+        <p id="surah-log-summary" class="course-meta"></p>
+        <div id="surah-linked-logs" class="course-history"></div>
+      </section>
       
       <div style="display: flex; gap: 12px; margin-top: 20px;">
         <button class="btn btn-secondary btn-full" onclick="closeSurahDetailModal()">Cancel</button>
@@ -1025,10 +1030,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20260922-logsearch"></script>
-  <script src="courses.js?v=20260922-logsearch"></script>
-  <script src="progress.js?v=20260922-logsearch"></script>
-  <script src="auto-sync.js?v=20260922-logsearch"></script>
+  <script src="app.js?v=20260922-surahlogs"></script>
+  <script src="courses.js?v=20260922-surahlogs"></script>
+  <script src="progress.js?v=20260922-surahlogs"></script>
+  <script src="auto-sync.js?v=20260922-surahlogs"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

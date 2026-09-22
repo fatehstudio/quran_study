@@ -1835,6 +1835,21 @@ function setupFormListeners() {
 // Surah details modal
 let activeSurahId = null;
 
+function surahLogKey(value) {
+  return String(value || '').normalize('NFKC').toLowerCase().replace(/^surah\s+/i, '').replace(/[\s\-'’ʻ]/g, '');
+}
+function sessionsForSurah(surah) {
+  const names = [surahLogKey(surah.name), surahLogKey(surah.arabic)];
+  return store.sessions.filter(session => names.includes(surahLogKey(session.surah)))
+    .sort((a, b) => `${b.date} ${b.time || ''}`.localeCompare(`${a.date} ${a.time || ''}`));
+}
+function editSurahLinkedLog(id) {
+  const surah = store.surahs.find(s => s.id === activeSurahId);
+  const changed = surah && (document.getElementById('surah-modal-notes').value !== (surah.notes || '') || ['tilawah','tafsir','tadabbur','hafazan','murajaah'].some(key => document.getElementById(`surah-chk-${key}`).checked !== !!surah[key]));
+  if (changed && !confirm('Discard unsaved surah changes and open this Daily Log?')) return;
+  closeSurahDetailModal();
+  editStudySession(id);
+}
 function openSurahDetailModal(surahId) {
   const s = store.surahs.find(item => item.id === surahId);
   if (!s) return;
@@ -1860,6 +1875,30 @@ function openSurahDetailModal(surahId) {
   
   const notesEl = document.getElementById("surah-modal-notes");
   if (notesEl) notesEl.value = s.notes || "";
+  const linked = sessionsForSurah(s);
+  document.getElementById('surah-log-summary').textContent = `${linked.length} logs · ${linked.reduce((sum, log) => sum + Number(log.minutes || 0), 0)} minutes studied`;
+  const container = document.getElementById('surah-linked-logs');
+  container.innerHTML = '';
+  if (!linked.length) container.textContent = 'No Daily Logs for this surah yet. Choose this surah when saving a Daily Log.';
+  linked.forEach(log => {
+    const card = document.createElement('article');
+    const heading = document.createElement('strong');
+    heading.textContent = `${log.date} ${log.time || ''} · ${log.minutes} min · ${log.category || ''}`;
+    card.appendChild(heading);
+    const course = store.courses.find(course => course.id === log.courseId);
+    for (const [label, value] of [['Course / source', course?.name || log.course || log.source], ['Lesson', log.lesson], ['Topic', log.topic], ['Notes', log.notes]]) {
+      if (!value) continue;
+      const detail = document.createElement('p');
+      detail.style.whiteSpace = 'pre-wrap';
+      detail.style.overflowWrap = 'anywhere';
+      detail.textContent = `${label}: ${value}`;
+      card.appendChild(detail);
+    }
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'btn btn-secondary'; button.textContent = 'View / edit Daily Log';
+    button.addEventListener('click', () => editSurahLinkedLog(log.id));
+    card.appendChild(button); container.appendChild(card);
+  });
   
   const modal = document.getElementById("surah-detail-modal");
   if (modal) modal.classList.add("active");
