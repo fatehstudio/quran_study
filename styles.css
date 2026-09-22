@@ -1108,13 +1108,11 @@ textarea.form-control {
   background: var(--bg-secondary);
 }
 
-.daily-tadabbur-fields summary {
+.daily-tadabbur-fields h4 {
   color: var(--primary);
   font-weight: 700;
-  cursor: pointer;
+  margin-bottom: 16px;
 }
-
-.daily-tadabbur-fields[open] summary { margin-bottom: 16px; }
 
 .log-item-stats {
   display: flex;
@@ -1129,10 +1127,6 @@ textarea.form-control {
   color: var(--accent);
 }
 
-.log-item-rating {
-  font-size: 12px;
-  color: var(--warning);
-}
 
 .log-delete-btn {
   background: transparent;

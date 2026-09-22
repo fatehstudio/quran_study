@@ -64,11 +64,10 @@ function editStudySession(id) {
     const value = session[key] || '';
     if (value && ![...select.options].some(option => option.value === value)) select.add(new Option(value, value));
   }
-  for (const [field, key] of Object.entries({date:'date',time:'time',minutes:'minutes',source:'source',category:'category',course:'courseId',lesson:'lesson',surah:'surah',topic:'topic',difficulty:'difficulty',rating:'rating',notes:'notes',reflection:'reflection','life-lesson':'lifeLesson',action:'action',dua:'dua','lesson-number':'lessonNumber','study-status':'studyStatus'})) {
+  for (const [field, key] of Object.entries({date:'date',time:'time',minutes:'minutes',source:'source',category:'category',course:'courseId',lesson:'lesson',surah:'surah',topic:'topic',notes:'notes',reflection:'reflection','life-lesson':'lifeLesson',action:'action',dua:'dua','lesson-number':'lessonNumber','study-status':'studyStatus'})) {
     document.getElementById(`sess-${field}`).value = session[key] ?? (field === 'study-status' ? 'in-progress' : '');
   }
   document.getElementById('sess-tags').value = Array.isArray(session.tags) ? session.tags.join(', ') : '';
-  if (session.reflection || session.lifeLesson || session.action || session.dua || session.tags?.length) document.querySelector('.daily-tadabbur-fields').open = true;
   document.getElementById('cancel-study-edit').hidden = false;
   document.querySelector('#log-session-form button[type="submit"]').textContent = 'Save changes';
   document.getElementById('session-form-title').textContent = '✏️ View / Edit Daily Log';

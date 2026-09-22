@@ -1107,7 +1107,7 @@ function renderLogsTab() {
     .filter(session => {
       if (dailyLogSurahFilter && surahLogKey(session.surah) !== surahLogKey(dailyLogSurahFilter)) return false;
       if (!query) return true;
-      return [session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah, session.topic, session.difficulty, session.studyStatus, session.notes]
+      return [session.date, session.time, session.category, session.source, session.course, session.lesson, session.surah, session.topic, session.studyStatus, session.notes]
         .filter(Boolean).join(" ").toLocaleLowerCase().includes(query);
     })
     .sort((a,b) => new Date(b.date + "T" + b.time) - new Date(a.date + "T" + a.time));
@@ -1147,7 +1147,6 @@ function renderLogsTab() {
       </div>
       <div class="log-item-stats">
         <span class="log-item-time">${s.minutes} min</span>
-        <span class="log-item-rating">${"★".repeat(s.rating || 5)}</span>
         <button type="button" class="log-edit-btn" onclick="editStudySession(${s.id})">Edit log</button>
         <button type="button" class="log-day-btn" onclick="openDailySummaryModal('${escapeCourseText(s.date)}')">Day reflection</button>
         <button type="button" class="log-delete-btn" aria-label="Delete this study session" onclick="deleteStudySession(${s.id})">
@@ -1748,8 +1747,6 @@ function setupFormListeners() {
         lesson: document.getElementById("sess-lesson").value,
         surah: document.getElementById("sess-surah").value,
         topic: document.getElementById("sess-topic").value,
-        difficulty: document.getElementById("sess-difficulty").value,
-        rating: parseInt(document.getElementById("sess-rating").value) || 5,
         notes: document.getElementById("sess-notes").value
       };
       newSession.reflection = document.getElementById('sess-reflection').value;
