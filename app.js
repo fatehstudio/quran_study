@@ -1025,6 +1025,13 @@ let surahSearchQuery = "";
 let surahJourneyPage = 0;
 const SURAH_JOURNEY_PAGE_SIZE = 12;
 
+function setSurahViewMode(mode) {
+  store.surahTrackerView = mode === 'grid' ? 'grid' : 'journey';
+  surahJourneyPage = 0;
+  saveToLocalStorage();
+  renderSurahGrid();
+}
+
 function changeSurahJourneyPage(delta) {
   surahJourneyPage += delta;
   renderSurahGrid();
@@ -1046,9 +1053,21 @@ function renderSurahGrid() {
     
     return matchesSearch;
   });
+  const viewMode = store.surahTrackerView === 'grid' ? 'grid' : 'journey';
+  const gridButton = document.getElementById('surah-view-grid');
+  const journeyButton = document.getElementById('surah-view-journey');
+  gridButton?.classList.toggle('active', viewMode === 'grid');
+  journeyButton?.classList.toggle('active', viewMode === 'journey');
+  gridButton?.setAttribute('aria-pressed', String(viewMode === 'grid'));
+  journeyButton?.setAttribute('aria-pressed', String(viewMode === 'journey'));
+  container.className = viewMode === 'grid' ? 'surah-grid-list' : 'surah-journey-container';
   
   if (!filtered.length) {
     container.innerHTML = '<div class="journey-empty"><p>No surahs match this search or filter.</p></div>';
+    return;
+  }
+  if (viewMode === 'grid') {
+    container.innerHTML = filtered.map(surah => `<button type="button" class="surah-card-cell ${surah.completion === 100 ? 'completed' : ''}" onclick="openSurahDetailModal(${surah.id})"><span class="surah-card-meta"><span class="surah-number">${surah.id}</span><span class="surah-arabic-name">${surah.arabic}</span></span><span class="surah-title-info"><strong>${escapeCourseText(surah.name)}</strong><small>${surah.verses} Ayat • ${surah.type}</small></span><span class="surah-mini-progress"><span class="surah-mini-progress-fill ${surah.completion === 100 ? 'done' : ''}" style="width:${surah.completion}%"></span></span></button>`).join('');
     return;
   }
   const pageCount = Math.ceil(filtered.length / SURAH_JOURNEY_PAGE_SIZE);

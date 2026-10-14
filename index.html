@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dream Dashboard – Study Quran</title>
-  <link rel="stylesheet" href="styles.css?v=20261014-surah-journey">
+  <link rel="stylesheet" href="styles.css?v=20261014-surah-views">
   <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 </head>
 <body>
@@ -449,6 +449,10 @@
         <div class="card-header-row" style="margin-bottom: 24px;">
           <h3 class="card-title">📖 114 Surah Milestone Tracker</h3>
           <div class="surah-filters">
+            <div class="surah-view-toggle" role="group" aria-label="Surah tracker view">
+              <button type="button" class="btn btn-secondary" id="surah-view-grid" onclick="setSurahViewMode('grid')">▦ Grid Cards</button>
+              <button type="button" class="btn btn-secondary" id="surah-view-journey" onclick="setSurahViewMode('journey')">〰 Winding Path</button>
+            </div>
             <input type="text" class="form-control surah-search-box" id="surah-search-input" placeholder="Search Surah name or number...">
             <select class="form-control" id="surah-filter-select" style="width: 160px;">
               <option value="all">All Surahs</option>
@@ -1019,10 +1023,10 @@
     <button class="btn btn-secondary btn-full" onclick="useDeviceVersion()">Replace cloud with this device’s progress</button>
     <button class="btn btn-secondary btn-full" onclick="this.closest('dialog').close()">Decide later</button>
   </dialog>
-  <script src="app.js?v=20261014-surah-journey"></script>
-  <script src="courses.js?v=20261014-surah-journey"></script>
-  <script src="progress.js?v=20261014-surah-journey"></script>
-  <script src="auto-sync.js?v=20261014-surah-journey"></script>
+  <script src="app.js?v=20261014-surah-views"></script>
+  <script src="courses.js?v=20261014-surah-views"></script>
+  <script src="progress.js?v=20261014-surah-views"></script>
+  <script src="auto-sync.js?v=20261014-surah-views"></script>
   <script>
     // Set current date in header on load
     document.getElementById("current-gregorian-date").innerText = new Date().toLocaleDateString("ms-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

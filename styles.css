@@ -1324,6 +1324,8 @@ textarea.form-control {
 .surah-search-box {
   flex-grow: 1;
 }
+.surah-view-toggle { display:flex; gap:8px; flex-basis:100%; }
+.surah-view-toggle .btn.active { background:var(--primary); color:white; border-color:var(--primary); }
 
 .surah-journey-container { overflow:hidden; padding:4px 8px; }
 .surah-journey-legend { display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; color:var(--text-secondary); font-size:12px; }
@@ -1369,6 +1371,10 @@ textarea.form-control {
   justify-content: space-between;
   gap: 8px;
   position: relative;
+  width:100%;
+  color:var(--text-primary);
+  text-align:left;
+  font:inherit;
 }
 
 .surah-card-cell:hover {
@@ -1410,6 +1416,9 @@ textarea.form-control {
   font-size: 13px;
   color: var(--text-primary);
 }
+.surah-title-info { display:flex; flex-direction:column; gap:3px; }
+.surah-title-info strong { font-size:13px; }
+.surah-title-info small { color:var(--text-light); font-size:10px; }
 
 .surah-title-info span {
   font-size: 10px;
@@ -1958,6 +1967,7 @@ textarea.form-control {
   .surah-journey-stop button { width:52px; height:52px; border-width:5px; font-size:14px; }
   .surah-journey-stop span { font-size:10px; }
   .surah-journey-pagination .btn { padding:9px 8px; font-size:11px; }
+  .surah-view-toggle .btn { flex:1; padding-inline:8px; font-size:12px; }
 }
 
 /* Course updates and compact, touch-friendly layouts. */
