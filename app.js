@@ -1022,12 +1022,17 @@ function incrementCourse(courseId) { continueCourse(courseId); }
 
 let surahFilter = "all";
 let surahSearchQuery = "";
+let surahJourneyPage = 0;
+const SURAH_JOURNEY_PAGE_SIZE = 12;
+
+function changeSurahJourneyPage(delta) {
+  surahJourneyPage += delta;
+  renderSurahGrid();
+}
 
 function renderSurahGrid() {
   const container = document.getElementById("surah-checklist-grid");
   if (!container) return;
-  
-  container.innerHTML = "";
   
   const filtered = store.surahs.filter(s => {
     // Search filter
@@ -1042,30 +1047,33 @@ function renderSurahGrid() {
     return matchesSearch;
   });
   
-  filtered.forEach(s => {
-    const card = document.createElement("div");
-    card.className = `surah-card-cell ${s.completion === 100 ? "completed" : ""}`;
-    card.innerHTML = `
-      <div class="surah-card-meta">
-        <span class="surah-number">${s.id}</span>
-        <span class="surah-arabic-name">${s.arabic}</span>
-      </div>
-      <div class="surah-title-info">
-        <h4>${s.name}</h4>
-        <span>${s.verses} Ayat • ${s.type}</span>
-      </div>
-      <div class="surah-mini-progress">
-        <div class="surah-mini-progress-fill ${s.completion === 100 ? "done" : ""}" style="width: ${s.completion}%"></div>
-      </div>
-    `;
-    
-    // Clicking opens detailed surah study tracker modal
-    card.addEventListener("click", () => {
-      openSurahDetailModal(s.id);
-    });
-    
-    container.appendChild(card);
+  if (!filtered.length) {
+    container.innerHTML = '<div class="journey-empty"><p>No surahs match this search or filter.</p></div>';
+    return;
+  }
+  const pageCount = Math.ceil(filtered.length / SURAH_JOURNEY_PAGE_SIZE);
+  surahJourneyPage = Math.max(0, Math.min(surahJourneyPage, pageCount - 1));
+  const startIndex = surahJourneyPage * SURAH_JOURNEY_PAGE_SIZE;
+  const pageSurahs = filtered.slice(startIndex, startIndex + SURAH_JOURNEY_PAGE_SIZE);
+  const nextSurah = filtered.find(surah => surah.completion < 100);
+  const nodes = pageSurahs.map((surah, index) => {
+    const row = Math.floor(index / 3), col = index % 3;
+    return { surah, x: row % 2 ? 500 - col * 200 : 100 + col * 200, y: 65 + row * 175 };
   });
+  const height = Math.max(175, Math.ceil(nodes.length / 3) * 175);
+  const paths = nodes.slice(1).map((node, index) => {
+    const previous = nodes[index];
+    const outside = previous.x === 500 ? 605 : -5;
+    const d = previous.y === node.y ? `M ${previous.x} ${previous.y} H ${node.x}` : `M ${previous.x} ${previous.y} C ${outside} ${previous.y}, ${outside} ${node.y}, ${node.x} ${node.y}`;
+    return `<path d="${d}" class="surah-journey-road ${previous.surah.completion === 100 && node.surah.completion === 100 ? 'travelled' : ''}"/><path d="${d}" class="surah-journey-road-center"/>`;
+  }).join('');
+  container.innerHTML = `<div class="surah-journey-legend"><span><i class="completed"></i>Completed</span><span><i class="next"></i>Up next</span><span><i></i>Upcoming</span></div>
+    <div class="surah-journey-map" style="height:${height}px"><svg viewBox="0 0 600 ${height}" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>${nodes.map(node => {
+      const isCompleted = node.surah.completion === 100;
+      const isNext = node.surah.id === nextSurah?.id;
+      const state = isCompleted ? 'completed' : isNext ? 'next' : node.surah.completion > 0 ? 'active' : 'upcoming';
+      return `<div class="surah-journey-stop ${state}" style="left:${node.x / 6}%;top:${node.y / height * 100}%"><button type="button" aria-label="${node.surah.id}. ${escapeCourseText(node.surah.name)}, ${isCompleted ? 'completed' : isNext ? 'up next' : node.surah.completion + '% complete'}" onclick="openSurahDetailModal(${node.surah.id})">${isCompleted ? '✓' : node.surah.id}</button><span>${escapeCourseText(node.surah.name)}</span>${isNext ? '<small>UP NEXT</small>' : ''}</div>`;
+    }).join('')}</div><div class="surah-journey-pagination"><button class="btn btn-secondary" onclick="changeSurahJourneyPage(-1)" ${surahJourneyPage === 0 ? 'disabled' : ''}>← Previous</button><span>${startIndex + 1}–${startIndex + pageSurahs.length} of ${filtered.length} surahs</span><button class="btn btn-secondary" onclick="changeSurahJourneyPage(1)" ${surahJourneyPage === pageCount - 1 ? 'disabled' : ''}>Next →</button></div>`;
 }
 
 // Render Logs Tab
@@ -2471,12 +2479,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (sFilter) {
     sFilter.addEventListener("change", (e) => {
       surahFilter = e.target.value;
+      surahJourneyPage = 0;
       renderSurahGrid();
     });
   }
   if (sSearch) {
     sSearch.addEventListener("input", (e) => {
       surahSearchQuery = e.target.value;
+      surahJourneyPage = 0;
       renderSurahGrid();
     });
   }

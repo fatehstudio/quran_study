@@ -1325,6 +1325,29 @@ textarea.form-control {
   flex-grow: 1;
 }
 
+.surah-journey-container { overflow:hidden; padding:4px 8px; }
+.surah-journey-legend { display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; color:var(--text-secondary); font-size:12px; }
+.surah-journey-legend span { display:flex; align-items:center; gap:7px; }
+.surah-journey-legend i { width:11px; height:11px; border-radius:50%; background:var(--bg-secondary); border:1px solid var(--border-color); }
+.surah-journey-legend i.completed { background:var(--primary); border-color:var(--primary); }
+.surah-journey-legend i.next { background:var(--accent); border-color:var(--accent); }
+.surah-journey-map { position:relative; width:100%; min-height:175px; }
+.surah-journey-map svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.surah-journey-road { fill:none; stroke:#fff1bd; stroke-width:32; stroke-linecap:round; }
+.dark-mode .surah-journey-road { stroke:rgba(217,119,6,.2); }
+.surah-journey-road.travelled { stroke:var(--primary-light); }
+.surah-journey-road-center { fill:none; stroke:var(--bg-card); stroke-width:2; stroke-dasharray:7 10; }
+.surah-journey-stop { position:absolute; transform:translate(-50%,-26px); width:116px; text-align:center; z-index:1; }
+.surah-journey-stop button { width:58px; height:58px; border-radius:50%; border:6px solid var(--bg-card); background:var(--bg-secondary); box-shadow:0 0 0 2px var(--border-color); color:var(--text-secondary); font:700 17px var(--font-display); cursor:pointer; transition:var(--transition); }
+.surah-journey-stop button:hover { transform:translateY(-2px); }
+.surah-journey-stop.completed button { background:var(--primary); color:white; box-shadow:0 0 0 2px var(--primary); }
+.surah-journey-stop.next button { background:var(--accent); color:white; box-shadow:0 0 0 3px var(--accent),0 0 0 7px var(--bg-card),0 0 0 9px var(--accent); }
+.surah-journey-stop.active button { color:var(--accent); box-shadow:0 0 0 2px var(--accent); }
+.surah-journey-stop span { display:block; margin-top:10px; font-size:12px; font-weight:700; line-height:1.25; overflow-wrap:anywhere; }
+.surah-journey-stop small { display:block; margin-top:4px; color:var(--accent); font-size:9px; font-weight:800; letter-spacing:1px; }
+.surah-journey-pagination { display:flex; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid var(--border-color); padding-top:16px; font-size:12px; color:var(--text-secondary); }
+.surah-journey-pagination button:disabled { opacity:.4; cursor:default; }
+
 .surah-grid-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1930,6 +1953,11 @@ textarea.form-control {
   .surah-grid-list {
     grid-template-columns: 1fr;
   }
+  .surah-journey-container { padding-inline:0; }
+  .surah-journey-stop { width:82px; }
+  .surah-journey-stop button { width:52px; height:52px; border-width:5px; font-size:14px; }
+  .surah-journey-stop span { font-size:10px; }
+  .surah-journey-pagination .btn { padding:9px 8px; font-size:11px; }
 }
 
 /* Course updates and compact, touch-friendly layouts. */
