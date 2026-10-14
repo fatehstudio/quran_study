@@ -1835,12 +1835,26 @@ function setupFormListeners() {
         end: "",
         status: "active"
       };
+      const courseType = document.getElementById("add-course-type").value;
+      if (courseType === "quran-study") {
+        const selectedIds = ["add-quran-surah-1", "add-quran-surah-2"].map(id => Number(document.getElementById(id).value));
+        if (!selectedIds[0] || !selectedIds[1] || selectedIds[0] === selectedIds[1]) {
+          showToast("Choose two different surahs for Quran Study.", "error");
+          return;
+        }
+        newCourse.type = "quran-study";
+        newCourse.name = newCourse.name.trim() || "Quran Study";
+        newCourse.category = newCourse.category.trim() || "Quran Study";
+        newCourse.quranSurahs = selectedIds.map(surahId => ({ surahId, studiedAyahs: 0 }));
+        newCourse.total = selectedIds.reduce((sum, id) => sum + SURAHS_DATA.find(surah => surah.id === id).verses, 0);
+      }
       
       newCourse.status = document.getElementById("add-course-status").value;
       if (newCourse.status !== "active") newCourse.start = "";
       store.courses.push(newCourse);
       refreshCourseSelect();
       courseForm.reset();
+      setCourseTypeFields();
       
       saveToLocalStorage();
       renderTrackersTab();

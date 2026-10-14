@@ -110,6 +110,13 @@ function validateStudy(s) {
 function updateCourseCompletion(id) {
   const c = store.courses.find(c => c.id === id);
   if (!c) return;
+  if (c.type === 'quran-study') {
+    c.completed = (c.quranSurahs || []).reduce((sum, item) => sum + (Number(item.studiedAyahs) || 0), 0);
+    c.total = (c.quranSurahs || []).reduce((sum, item) => sum + (SURAHS_DATA.find(surah => surah.id === item.surahId)?.verses || 0), 0);
+    if (c.completed >= c.total && c.total > 0) { c.status = 'completed'; c.end = localStudyDate(); }
+    else if (c.status === 'completed') { c.status = 'active'; c.end = ''; }
+    return;
+  }
   const done = new Set(store.sessions.filter(s => s.courseId === id && s.studyStatus === 'completed' && s.lessonNumber > c.legacyCompleted).map(s => s.lessonNumber));
   c.completed = Math.min(c.total, c.legacyCompleted + done.size);
   if (c.completed >= c.total) { c.status = 'completed'; c.end = localStudyDate(); }
@@ -150,7 +157,8 @@ renderTrackersTab = function() {
     const sessions = store.sessions.filter(s => s.courseId === c.id);
     const minutes = sessions.reduce((sum,s) => sum + s.minutes, 0);
     const last = sessions.map(s => s.date).sort().at(-1);
-    return `<article class="course-tracker-card"><div class="course-header"><div class="course-title"><h4>${escapeCourseText(c.name)}</h4><span>${escapeCourseText(c.platform)} · ${escapeCourseText(c.category)}</span></div><span class="course-status-badge">${escapeCourseText(c.status)}</span></div><p>${c.completed} / ${c.total} lessons · ${Math.round(c.completed / c.total * 100)}%</p><progress value="${c.completed}" max="${c.total}" aria-label="Course completion"></progress><p class="course-meta">${minutes} minutes studied · Last studied: ${last || 'Not yet'}</p><div class="course-actions-row"><button class="btn btn-primary" onclick="continueCourse(${c.id})">${c.status === 'completed' ? 'Log revision' : 'Continue'}</button><button class="btn btn-secondary" onclick="openCourseDetails(${c.id})">Details & edit</button></div></article>`;
+    const unit = c.type === 'quran-study' ? 'ayat' : 'lessons';
+    return `<article class="course-tracker-card"><div class="course-header"><div class="course-title"><h4>${escapeCourseText(c.name)}</h4><span>${escapeCourseText(c.platform)} · ${escapeCourseText(c.category)}</span></div><span class="course-status-badge">${escapeCourseText(c.status)}</span></div><p>${c.completed} / ${c.total} ${unit} · ${Math.round(c.completed / c.total * 100)}%</p><progress value="${c.completed}" max="${c.total}" aria-label="Course completion"></progress><p class="course-meta">${minutes} minutes studied · Last studied: ${last || 'Not yet'}</p><div class="course-actions-row"><button class="btn btn-primary" onclick="${c.type === 'quran-study' ? `journeyCourseId=${c.id};document.querySelector('[data-tab=progress]').click()` : `continueCourse(${c.id})`}">${c.type === 'quran-study' ? 'Track ayat' : c.status === 'completed' ? 'Log revision' : 'Continue'}</button><button class="btn btn-secondary" onclick="openCourseDetails(${c.id})">Details & edit</button></div></article>`;
   }).join('') || '<p class="course-meta">No courses here yet. Add a course to begin.</p>';
   renderSurahGrid();
 };
@@ -158,12 +166,15 @@ function openCourseDetails(id) {
   const c = store.courses.find(c => c.id === id);
   const dialog = document.getElementById('course-dialog');
   const sessions = store.sessions.filter(s => s.courseId === id).sort((a,b) => b.date.localeCompare(a.date));
-  dialog.innerHTML = `<form id="edit-course-form"><h3>Course details</h3><label>Course title<input class="form-control" name="name" value="${escapeCourseText(c.name)}" required></label><label>Platform<input class="form-control" name="platform" value="${escapeCourseText(c.platform)}" required></label><label>Category<input class="form-control" name="category" value="${escapeCourseText(c.category)}" required></label><label>Total lessons<input class="form-control" name="total" type="number" min="${Math.max(1,c.completed,...sessions.map(s=>s.lessonNumber || 0))}" value="${c.total}" required></label><label>Status<select class="form-control" name="status">${['planned','active','paused','completed','archived'].map(s=>`<option ${s===c.status?'selected':''}>${s}</option>`).join('')}</select></label><p class="course-meta">${c.legacyCompleted} completed lessons carried over from your previous tracker. New completions are linked to study logs.</p><div class="course-actions-row"><button class="btn btn-primary">Save details</button><button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">Close</button></div></form><h4>Study history</h4><div class="course-history">${sessions.map(s=>`<article><strong>${escapeCourseText(s.date)} · ${s.minutes} min</strong><p>${escapeCourseText(s.lesson || s.topic || 'Study')} · ${escapeCourseText(s.studyStatus || 'Study')}</p><p>${escapeCourseText(s.notes)}</p><button class="btn btn-secondary" onclick="editCourseStudy(${s.id})">Edit entry</button> <button class="btn btn-secondary" onclick="removeCourseStudy(${s.id},${id})">Delete study entry</button></article>`).join('') || '<p>No study sessions recorded.</p>'}</div>`;
+  const totalField = c.type === 'quran-study'
+    ? `<p class="course-meta">${c.quranSurahs.map(item => escapeCourseText(SURAHS_DATA.find(surah => surah.id === item.surahId)?.name)).join(' · ')} · ${c.total} ayat total</p>`
+    : `<label>Total lessons<input class="form-control" name="total" type="number" min="${Math.max(1,c.completed,...sessions.map(s=>s.lessonNumber || 0))}" value="${c.total}" required></label><p class="course-meta">${c.legacyCompleted} completed lessons carried over from your previous tracker. New completions are linked to study logs.</p>`;
+  dialog.innerHTML = `<form id="edit-course-form"><h3>Course details</h3><label>Course title<input class="form-control" name="name" value="${escapeCourseText(c.name)}" required></label><label>Platform<input class="form-control" name="platform" value="${escapeCourseText(c.platform)}" required></label><label>Category<input class="form-control" name="category" value="${escapeCourseText(c.category)}" required></label>${totalField}<label>Status<select class="form-control" name="status">${['planned','active','paused','completed','archived'].map(s=>`<option ${s===c.status?'selected':''}>${s}</option>`).join('')}</select></label><div class="course-actions-row"><button class="btn btn-primary">Save details</button><button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">Close</button></div></form><h4>Study history</h4><div class="course-history">${sessions.map(s=>`<article><strong>${escapeCourseText(s.date)} · ${s.minutes} min</strong><p>${escapeCourseText(s.lesson || s.topic || 'Study')} · ${escapeCourseText(s.studyStatus || 'Study')}</p><p>${escapeCourseText(s.notes)}</p><button class="btn btn-secondary" onclick="editCourseStudy(${s.id})">Edit entry</button> <button class="btn btn-secondary" onclick="removeCourseStudy(${s.id},${id})">Delete study entry</button></article>`).join('') || '<p>No study sessions recorded.</p>'}</div>`;
   dialog.querySelector('form').onsubmit = e => {
     e.preventDefault();
     const values = new FormData(e.target);
-    if (values.get('status') === 'completed' && c.completed < Number(values.get('total'))) { showToast('Complete the remaining lessons through study updates first.', 'error'); return; }
-    c.name = values.get('name').trim(); c.platform = values.get('platform').trim(); c.category = values.get('category').trim(); c.total = Number(values.get('total')); c.status = values.get('status');
+    if (c.type !== 'quran-study' && values.get('status') === 'completed' && c.completed < Number(values.get('total'))) { showToast('Complete the remaining lessons through study updates first.', 'error'); return; }
+    c.name = values.get('name').trim(); c.platform = values.get('platform').trim(); c.category = values.get('category').trim(); if (c.type !== 'quran-study') c.total = Number(values.get('total')); c.status = values.get('status');
     updateCourseCompletion(id);
     saveToLocalStorage(); refreshCourseSelect(); renderAllViews(); dialog.close(); showToast('Course details updated.');
   };
@@ -173,6 +184,22 @@ function removeCourseStudy(sessionId, courseId) { deleteStudySession(sessionId);
 
 // Install form controls synchronously, before the application's load handler runs.
 document.getElementById('sess-course').addEventListener('change', selectStudyCourse);
+function setCourseTypeFields() {
+  const isQuran = document.getElementById('add-course-type').value === 'quran-study';
+  document.getElementById('quran-course-fields').hidden = !isQuran;
+  document.getElementById('standard-course-total-group').hidden = isQuran;
+  document.getElementById('add-course-total').required = !isQuran;
+  for (const id of ['add-quran-surah-1', 'add-quran-surah-2']) document.getElementById(id).required = isQuran;
+  if (isQuran) {
+    if (!document.getElementById('add-course-name').value) document.getElementById('add-course-name').value = 'Quran Study';
+    if (!document.getElementById('add-course-platform').value) document.getElementById('add-course-platform').value = 'Personal Study';
+    if (!document.getElementById('add-course-category').value) document.getElementById('add-course-category').value = 'Quran Study';
+  }
+}
+const quranCourseOptions = SURAHS_DATA.map(surah => `<option value="${surah.id}">${surah.id}. ${escapeCourseText(surah.name)}</option>`).join('');
+document.getElementById('add-quran-surah-1').innerHTML = '<option value="">Choose Surah 1</option>' + quranCourseOptions;
+document.getElementById('add-quran-surah-2').innerHTML = '<option value="">Choose Surah 2</option>' + quranCourseOptions;
+document.getElementById('add-course-type').addEventListener('change', setCourseTypeFields);
 document.getElementById('sess-lesson').closest('.form-group').insertAdjacentHTML('afterend', '<div class="form-group row-2"><label>Lesson number<input id="sess-lesson-number" class="form-control" type="number" min="1" step="1" placeholder="For completion tracking"></label><label>Study progress<select id="sess-study-status" class="form-control"><option value="in-progress">In progress</option><option value="completed">Lesson completed</option><option value="revision">Revision</option></select></label></div>');
 document.querySelector('#add-course-form button').insertAdjacentHTML('beforebegin','<label class="form-group">Status<select id="add-course-status" class="form-control"><option value="active">Active</option><option value="planned">Planned</option><option value="paused">Paused</option></select></label>');
 document.body.insertAdjacentHTML('beforeend','<dialog id="course-dialog" aria-label="Course details"></dialog>');

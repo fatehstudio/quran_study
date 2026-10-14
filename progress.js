@@ -1,6 +1,7 @@
 let journeyCourseId = null;
 let journeyPage = 0;
 let journeyLesson = null;
+let journeySurahId = null;
 const JOURNEY_PAGE_SIZE = 12;
 
 function courseJourney(course) {
@@ -14,6 +15,7 @@ function courseJourney(course) {
 function chooseJourneyCourse(value) {
   journeyCourseId = Number(value);
   journeyLesson = null;
+  journeySurahId = null;
   const course = store.courses.find(c => c.id === journeyCourseId);
   journeyPage = course ? Math.floor((Math.min(courseJourney(course).next, course.total) - 1) / JOURNEY_PAGE_SIZE) : 0;
   renderProgressTab();
@@ -24,6 +26,31 @@ function changeJourneyPage(delta) {
   renderProgressTab();
 }
 function selectJourneyLesson(number) { journeyLesson = number; renderProgressTab(); }
+function selectJourneySurah(surahId) { journeySurahId = journeySurahId === surahId ? null : surahId; renderProgressTab(); }
+function saveJourneyAyahProgress(courseId, surahId) {
+  const course = store.courses.find(item => item.id === courseId);
+  const item = course?.quranSurahs?.find(entry => entry.surahId === surahId);
+  const surah = SURAHS_DATA.find(entry => entry.id === surahId);
+  if (!course || !item || !surah) return;
+  const input = document.getElementById(`quran-ayah-progress-${courseId}-${surahId}`);
+  item.studiedAyahs = Math.max(0, Math.min(surah.verses, Number(input.value) || 0));
+  updateCourseCompletion(courseId);
+  saveToLocalStorage();
+  renderProgressTab();
+  showToast(`Progress for ${surah.name} saved.`);
+}
+function renderQuranStudyProgress(course, content) {
+  course.quranSurahs = (course.quranSurahs || []).slice(0, 2);
+  updateCourseCompletion(course.id);
+  const percent = course.total ? Math.round(course.completed / course.total * 100) : 0;
+  const active = course.quranSurahs.find(item => item.surahId === journeySurahId);
+  content.innerHTML = `<div class="journey-summary section-card"><div><span class="journey-eyebrow">${escapeCourseText(course.platform)} · ${escapeCourseText(course.status)}</span><h3>${escapeCourseText(course.name)}</h3><p>Quran study progress</p></div><strong>${percent}<small>%</small></strong><progress aria-label="Quran Study completion" value="${course.completed}" max="${course.total || 1}"></progress></div>
+    <div class="section-card quran-study-track"><div class="journey-map-heading"><h3>Surahs in this course</h3><p>Tap a surah name to view its ayah progress.</p></div><div class="quran-study-surah-list">${course.quranSurahs.map(item => {
+      const surah = SURAHS_DATA.find(entry => entry.id === item.surahId);
+      const expanded = item.surahId === journeySurahId;
+      return `<article class="quran-study-surah ${expanded ? 'expanded' : ''}"><button type="button" class="quran-study-surah-name" aria-expanded="${expanded}" onclick="selectJourneySurah(${item.surahId})"><span>${surah.id}. ${escapeCourseText(surah.name)}</span><span aria-hidden="true">${expanded ? '−' : '+'}</span></button>${expanded ? `<div class="quran-study-surah-detail"><p><strong>${item.studiedAyahs || 0}</strong> of <strong>${surah.verses}</strong> ayat studied</p><progress value="${item.studiedAyahs || 0}" max="${surah.verses}" aria-label="${escapeCourseText(surah.name)} ayah progress"></progress><label class="form-label" for="quran-ayah-progress-${course.id}-${surah.id}">Number of ayat studied<input class="form-control" id="quran-ayah-progress-${course.id}-${surah.id}" type="number" min="0" max="${surah.verses}" value="${item.studiedAyahs || 0}"></label><button class="btn btn-primary" onclick="saveJourneyAyahProgress(${course.id},${surah.id})">Save ayah progress</button></div>` : ''}</article>`;
+    }).join('')}</div></div>`;
+}
 function studyJourneyLesson() {
   const course = store.courses.find(c => c.id === journeyCourseId);
   if (!course) return;
@@ -52,6 +79,10 @@ function renderProgressTab() {
     return;
   }
   select.value = String(course.id);
+  if (course.type === 'quran-study') {
+    renderQuranStudyProgress(course, content);
+    return;
+  }
   const { sessions, done, next } = courseJourney(course);
   const pages = Math.ceil(course.total / JOURNEY_PAGE_SIZE);
   journeyPage = Math.max(0, Math.min(journeyPage, pages - 1));
