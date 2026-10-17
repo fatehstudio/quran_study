@@ -1,6 +1,20 @@
 function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  if (e && e.parameter && e.parameter.action === 'pictureResult') {
+    var callback = e.parameter.callback || '';
+    if (!/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(callback)) throw new Error('Invalid callback');
+    var props = PropertiesService.getScriptProperties();
+    var result = props.getProperty('drive_upload_' + e.parameter.token) || '{"error":"Picture upload result expired; please sync again."}';
+    props.deleteProperty('drive_upload_' + e.parameter.token);
+    return ContentService.createTextOutput(callback + '(' + result + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var data = sheet.getRange(1, 1).getValue() || "{}";
+  if (String(data).indexOf('QURAN_PICTURES_V1:') === 0) {
+    var count = Number(String(data).split(':')[1]);
+    var chunks = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('_QuranBackup');
+    data = chunks.getRange(1, 1, count, 1).getValues().map(function(row) { return JSON.parse(row[0]); }).join('');
+  }
   var callback = e && e.parameter ? e.parameter.callback : "";
 
   // JSONP is required because the dashboard is hosted on GitHub Pages.
@@ -18,7 +32,22 @@ function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (e && e.parameter && e.parameter.action === 'savePicture') {
+      var request = JSON.parse(e.postData.contents || '{}');
+      if (!e.parameter.token || !request.data || !/^data:image\/(jpeg|png|webp);base64,/.test(request.data)) {
+        throw new Error('Invalid picture upload');
+      }
+      var encoded = request.data.substring(request.data.indexOf(',') + 1);
+      var bytes = Utilities.base64Decode(encoded);
+      if (bytes.length > 1500000) throw new Error('Picture exceeds the 1.5 MB upload limit');
+      var mimeType = request.mimeType || 'image/jpeg';
+      var safeName = String(request.name || 'study-picture.jpg').replace(/[\\/:*?"<>|]/g, '_').slice(0, 100);
+      var file = DriveApp.createFile(Utilities.newBlob(bytes, mimeType, safeName));
+      var uploadResult = JSON.stringify({driveId:file.getId(), driveUrl:file.getUrl()});
+      PropertiesService.getScriptProperties().setProperty('drive_upload_' + e.parameter.token, uploadResult);
+      return ContentService.createTextOutput('ok').setMimeType(ContentService.MimeType.TEXT);
+    }
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var json = e && e.postData ? e.postData.contents : "";
 
     // Validate before replacing the current cloud copy.
@@ -27,7 +56,17 @@ function doPost(e) {
       throw new Error("Invalid dashboard data");
     }
 
-    sheet.getRange(1, 1).setValue(json);
+    if (json.length > 45000) {
+      var book = SpreadsheetApp.getActiveSpreadsheet();
+      var chunks = book.getSheetByName('_QuranBackup') || book.insertSheet('_QuranBackup');
+      var rows = [];
+      for (var i = 0; i < json.length; i += 20000) rows.push([JSON.stringify(json.slice(i, i + 20000))]);
+      if (chunks.getMaxRows() < rows.length) chunks.insertRowsAfter(chunks.getMaxRows(), rows.length - chunks.getMaxRows());
+      chunks.getRange(1, 1, rows.length, 1).setNumberFormat('@').setValues(rows);
+      sheet.getRange(1, 1).setValue('QURAN_PICTURES_V1:' + rows.length);
+    } else {
+      sheet.getRange(1, 1).setValue(json);
+    }
     SpreadsheetApp.flush();
     return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
       .setMimeType(ContentService.MimeType.JSON);

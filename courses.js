@@ -42,6 +42,7 @@ function saveStudySession(session) {
   cancelStudyEdit();
 }
 function cancelStudyEdit() {
+  setPictures('session');
   editingStudyId = null;
   document.getElementById('cancel-study-edit').hidden = true;
   document.querySelector('#log-session-form button[type="submit"]').textContent = 'Save study session';
@@ -67,6 +68,7 @@ function editStudySession(id) {
   for (const [field, key] of Object.entries({date:'date',time:'time',minutes:'minutes',source:'source',category:'category',course:'courseId',lesson:'lesson',surah:'surah',topic:'topic',notes:'notes',reflection:'reflection','life-lesson':'lifeLesson',action:'action',dua:'dua','lesson-number':'lessonNumber','study-status':'studyStatus'})) {
     document.getElementById(`sess-${field}`).value = session[key] ?? (field === 'study-status' ? 'in-progress' : '');
   }
+  setPictures('session', session.pictures);
   document.getElementById('sess-tags').value = Array.isArray(session.tags) ? session.tags.join(', ') : '';
   document.getElementById('cancel-study-edit').hidden = false;
   document.querySelector('#log-session-form button[type="submit"]').textContent = 'Save changes';

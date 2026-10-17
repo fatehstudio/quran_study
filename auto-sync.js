@@ -16,12 +16,27 @@ function sharedStudyData(value) {
   });
   return data;
 }
+function sharedPicture(picture) {
+  if (!picture || typeof picture !== 'object') return picture;
+  const {data, ...metadata} = picture;
+  return metadata;
+}
 function stableSyncText(value) {
   if (Array.isArray(value)) return '[' + value.map(stableSyncText).join(',') + ']';
   if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableSyncText(value[k])).join(',') + '}';
   return JSON.stringify(value);
 }
-function studyFingerprint(value) { return stableSyncText(sharedStudyData(value)); }
+function canonicalStudyData(value) {
+  const data = sharedStudyData(value);
+  (data.sessions || []).forEach(s => { s.pictures = (s.pictures || []).map(sharedPicture); });
+  Object.values(data.dailyLogs || {}).forEach(log => { log.pictures = (log.pictures || []).map(sharedPicture); });
+  if (data.reflections) {
+    data.reflections.pictures = (data.reflections.pictures || []).map(sharedPicture);
+    data.reflections.duaPictures = (data.reflections.duaPictures || []).map(sharedPicture);
+  }
+  return data;
+}
+function studyFingerprint(value) { return stableSyncText(canonicalStudyData(value)); }
 function persistSyncState() {
   localStorage.setItem(AUTO_SYNC_KEY, JSON.stringify({url:autoSync.url, baseline:autoSync.baseline, dirty:autoSync.dirty, cloudFirst:autoSync.cloudFirst}));
 }
@@ -54,6 +69,46 @@ function saveSafetyCopy() {
   localStorage.setItem('quran_dashboard_before_cloud_sync', JSON.stringify(store));
 }
 function validSyncUrl(url) { return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url); }
+function readScriptResult(url, action, token) {
+  return new Promise((resolve, reject) => {
+    const callback = '__quranDrive_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => finish(new Error('Google Drive response timed out')), 30000);
+    function finish(error, value) { clearTimeout(timeout); script.remove(); delete window[callback]; error ? reject(error) : resolve(value); }
+    window[callback] = value => value?.error ? finish(new Error(value.error)) : finish(null, value);
+    script.onerror = () => finish(new Error('Google Drive response could not be loaded'));
+    script.src = `${url}?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token)}&callback=${encodeURIComponent(callback)}&_t=${Date.now()}`;
+    document.head.appendChild(script);
+  });
+}
+async function savePictureToDrive(url, picture) {
+  const token = crypto.randomUUID();
+  await fetch(`${url}?action=savePicture&token=${encodeURIComponent(token)}`, {
+    method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({id:picture.id, name:picture.name, mimeType:picture.mimeType || 'image/jpeg', data:picture.data})
+  });
+  const result = await readScriptResult(url, 'pictureResult', token);
+  if (!result?.driveId || !result?.driveUrl) throw new Error('Google Drive did not confirm the picture upload');
+  return result;
+}
+function allStudyPictures(data) {
+  const found = [];
+  (data.sessions || []).forEach(record => (record.pictures || []).forEach(picture => found.push(picture)));
+  Object.values(data.dailyLogs || {}).forEach(record => (record.pictures || []).forEach(picture => found.push(picture)));
+  (data.reflections?.pictures || []).forEach(picture => found.push(picture));
+  (data.reflections?.duaPictures || []).forEach(picture => found.push(picture));
+  return [...new Map(found.filter(p => p.id).map(p => [p.id, p])).values()];
+}
+function updateLocalPicture(picture, driveInfo) {
+  const records = [...store.sessions, ...Object.values(store.dailyLogs || {})];
+  if (store.reflections) records.push(store.reflections);
+  records.forEach(record => {
+    for (const key of ['pictures','duaPictures']) {
+      const existing = record[key]?.find(p => p.id === picture.id || (!p.id && p.name === picture.name && p.data === picture.data));
+      if (existing) { Object.assign(existing, driveInfo, {id:picture.id,thumb:picture.thumb || picture.data}); delete existing.data; }
+    }
+  });
+}
 async function readCloudData(url) {
   // Apps Script ContentService responses do not expose CORS headers. JSONP
   // lets the public web app read the same response without a proxy.
@@ -140,12 +195,25 @@ async function runAutoSync() {
 async function uploadStudyData(url, localText) {
   // The write request is intentionally opaque; the following JSONP readback
   // verifies that Apps Script stored the exact dashboard data.
-  await fetch(url, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:localText});
+  const data = sharedStudyData(store);
+  for (const picture of allStudyPictures(data)) {
+    if (!picture.driveId && picture.data) {
+      picture.id ||= crypto.randomUUID();
+      picture.thumb ||= picture.data;
+      const driveInfo = await savePictureToDrive(url, picture);
+      Object.assign(picture, driveInfo);
+      delete picture.data;
+      updateLocalPicture(picture, driveInfo);
+      localStorage.setItem('quran_dashboard_store', JSON.stringify(store));
+    }
+  }
+  const cloudText = stableSyncText(canonicalStudyData(data));
+  await fetch(url, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:cloudText});
   const verified = await readCloudData(url);
   if (url !== autoSync.url) return;
-  if (!verified || studyFingerprint(verified) !== localText) { markSyncConflict(); return; }
-  autoSync.baseline = localText;
-  autoSync.dirty = studyFingerprint(store) !== localText;
+  if (!verified || studyFingerprint(verified) !== cloudText) { markSyncConflict(); return; }
+  autoSync.baseline = studyFingerprint(store);
+  autoSync.dirty = false;
 }
 async function connectAutoSync() {
   if (autoSync.busy) { showToast('Please wait for the current sync to finish.', 'error'); return; }

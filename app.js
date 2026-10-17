@@ -493,7 +493,12 @@ async function readFromLinkedFile(handle) {
 // 5. LOCAL STORAGE SYNC & GOOGLE SHEETS
 // ==========================================
 function saveToLocalStorage() {
-  localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
+  try {
+    localStorage.setItem("quran_dashboard_store", JSON.stringify(store));
+  } catch (error) {
+    showToast("Could not save on this device. Browser storage may be full. Remove pictures or free space and try again.");
+    throw error;
+  }
   writeToLinkedFile();
   queueAutoSync();
 }
@@ -1164,6 +1169,7 @@ function renderLogsTab() {
             ${s.surah ? `<p><strong>Surah:</strong> ${escapeCourseText(s.surah)}</p>` : ""}
             ${s.studyStatus ? `<p><strong>Progress:</strong> ${escapeCourseText(s.studyStatus)}</p>` : ""}
             ${s.notes ? `<p class="log-item-notes"><strong>Notes:</strong> ${escapeCourseText(s.notes)}</p>` : ""}
+            ${pictureGallery(s.pictures)}
             ${s.reflection ? `<p class="log-item-reflection"><strong>Reflection:</strong> ${escapeCourseText(s.reflection)}</p>` : ""}
             ${s.lifeLesson ? `<p><strong>Life lesson:</strong> ${escapeCourseText(s.lifeLesson)}</p>` : ""}
             ${s.action ? `<p><strong>Action:</strong> ${escapeCourseText(s.action)}</p>` : ""}
@@ -1200,7 +1206,7 @@ function getCategoryEmoji(category) {
 }
 
 function combinedJournalEntries() {
-  const linked = store.sessions.filter(session => session.reflection || session.lifeLesson || session.action || session.dua || session.tags?.length)
+  const linked = store.sessions.filter(session => session.reflection || session.lifeLesson || session.action || session.dua || session.tags?.length || session.pictures?.length)
     .map(session => ({
       entryType: 'session', entryId: session.id, date: session.date, surah: session.surah || session.course || session.category,
       ayah: session.ayah || '', reflection: session.reflection || '', lesson: session.lifeLesson || '',
@@ -1425,6 +1431,7 @@ function renderJournalTab() {
         <span class="journal-surah-ref">${escapeCourseText(j.surah)}${j.ayah ? ` • Ayah ${escapeCourseText(j.ayah)}` : ''}</span>
         <span class="journal-date">${escapeCourseText(j.date)}${j.entryType === 'session' ? ' · Daily Log' : ''}</span>
       </div>
+      ${pictureGallery(j.session?.pictures)}
       ${j.reflection ? `<p class="journal-reflection">"${escapeCourseText(j.reflection)}"</p>` : ''}
       <div class="journal-lessons-section">
         ${j.lesson ? `<div class="lesson-row">
@@ -1575,10 +1582,14 @@ function renderReflectionsTab() {
     if (el) el.value = fields[id] || "";
   });
 
+  setPictures('board', store.reflections.pictures);
+  setPictures('dua', store.reflections.duaPictures);
   const boardForm = document.getElementById("reflection-board-form");
   if (boardForm && !boardForm.dataset.hooked) {
     boardForm.addEventListener("submit", event => {
       event.preventDefault();
+      if (!picturesReady('board')) return;
+      store.reflections.pictures = getPictures('board');
       store.reflections.favoriteAyah = document.getElementById("refl-ayah-arabic").value.trim();
       store.reflections.favoriteAyahTranslation = document.getElementById("refl-ayah-trans").value.trim();
       store.reflections.favoriteAyahRef = document.getElementById("refl-ayah-ref").value.trim();
@@ -1593,6 +1604,8 @@ function renderReflectionsTab() {
   if (duaForm && !duaForm.dataset.hooked) {
     duaForm.addEventListener("submit", event => {
       event.preventDefault();
+      if (!picturesReady('dua')) return;
+      store.reflections.duaPictures = getPictures('dua');
       store.reflections.dua = document.getElementById("refl-dua-arabic").value.trim();
       store.reflections.duaTranslation = document.getElementById("refl-dua-translation").value.trim();
       saveToLocalStorage();
@@ -1806,6 +1819,7 @@ function setupFormListeners() {
       const mins = parseInt(document.getElementById("sess-minutes").value) || 30;
       const dateStr = document.getElementById("sess-date").value || localStudyDate();
       
+      if (!picturesReady('session')) return;
       const wasEditing = editingStudyId !== null;
       const newSession = {
         id: nextRecordId(store.sessions),
@@ -1821,6 +1835,7 @@ function setupFormListeners() {
         topic: document.getElementById("sess-topic").value,
         notes: document.getElementById("sess-notes").value
       };
+      newSession.pictures = getPictures('session');
       newSession.reflection = document.getElementById('sess-reflection').value;
       newSession.lifeLesson = document.getElementById('sess-life-lesson').value;
       newSession.action = document.getElementById('sess-action').value;
@@ -2131,6 +2146,7 @@ function openDailySummaryModal(dateStr) {
     });
   }
   
+  setPictures('daily', log.pictures);
   document.getElementById("daily-mood").value = log.mood;
   document.getElementById("daily-reflection").value = log.reflection || "";
   document.getElementById("daily-notes").value = log.notes || "";
@@ -2147,7 +2163,7 @@ function closeDailySummaryModal() {
 }
 
 function saveDailySummaryDetails() {
-  if (!activeDailyDate) return;
+  if (!activeDailyDate || !picturesReady('daily')) return;
   
   if (!store.dailyLogs[activeDailyDate]) {
     store.dailyLogs[activeDailyDate] = {
@@ -2159,6 +2175,7 @@ function saveDailySummaryDetails() {
   }
   
   const log = store.dailyLogs[activeDailyDate];
+  log.pictures = getPictures('daily');
   log.mood = document.getElementById("daily-mood").value;
   log.reflection = document.getElementById("daily-reflection").value;
   log.notes = document.getElementById("daily-notes").value;
