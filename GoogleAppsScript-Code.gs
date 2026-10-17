@@ -68,8 +68,22 @@ function doPost(e) {
       sheet.getRange(1, 1).setValue(json);
     }
     SpreadsheetApp.flush();
+    if (e && e.parameter && e.parameter.token) {
+      PropertiesService.getScriptProperties().setProperty(
+        'drive_upload_' + e.parameter.token,
+        JSON.stringify({ok:true})
+      );
+    }
     return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
       .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    if (e && e.parameter && e.parameter.token) {
+      PropertiesService.getScriptProperties().setProperty(
+        'drive_upload_' + e.parameter.token,
+        JSON.stringify({error:String(error && error.message || error)})
+      );
+    }
+    throw error;
   } finally {
     lock.releaseLock();
   }

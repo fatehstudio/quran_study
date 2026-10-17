@@ -188,7 +188,7 @@ async function runAutoSync() {
     persistSyncState();
     if (!autoSync.conflict) setSyncStatus(autoSync.dirty ? 'New changes pending sync…' : 'Synced at ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));
   } catch (error) {
-    setSyncStatus('Sync unavailable — local progress kept. Retrying automatically.');
+    setSyncStatus('Sync unavailable: ' + (error.message || 'request failed') + ' Local progress kept; retrying automatically.');
     console.warn('Cloud sync:', error.message);
   } finally { autoSync.busy = false; }
 }
@@ -208,7 +208,12 @@ async function uploadStudyData(url, localText) {
     }
   }
   const cloudText = stableSyncText(canonicalStudyData(data));
-  await fetch(url, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:cloudText});
+  const token = crypto.randomUUID();
+  await fetch(`${url}?action=saveData&token=${encodeURIComponent(token)}`, {
+    method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:cloudText
+  });
+  const saveResult = await readScriptResult(url, 'pictureResult', token);
+  if (!saveResult?.ok) throw new Error('Apps Script did not confirm saving the backup');
   const verified = await readCloudData(url);
   if (url !== autoSync.url) return;
   if (!verified || studyFingerprint(verified) !== cloudText) { markSyncConflict(); return; }
